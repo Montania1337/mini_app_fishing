@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TG Fishing</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="user-info">
+                <span id="username">Рыбак</span>
+            </div>
+            <div class="balance-container">
+                <span class="coin-icon">💰</span>
+                <span id="balance">0</span>
+            </div>
+        </header>
+
+        <main>
+            <button id="fish-btn" class="main-btn">Забросить удочку</button>
+        </main>
+
+        <!-- Combat Screen (Боевка с рыбой) -->
+        <div id="combat-screen" class="combat-screen hidden">
+            <div class="combat-container">
+                <div class="combat-header">
+                    <h3>⚔️ Боевка!</h3>
+                </div>
+                
+                <div class="fish-display">
+                    <div class="fish-emoji" id="combat-fish-emoji">🐟</div>
+                    <div class="fish-name" id="combat-fish-name">Рыба</div>
+                </div>
+                
+                <div class="hp-bar-container">
+                    <div class="hp-bar">
+                        <div class="hp-fill" id="combat-hp-fill"></div>
+                    </div>
+                    <div class="hp-text" id="combat-hp-text">10/10</div>
+                </div>
+                
+                <div class="combat-action">
+                    <div class="strike-area" id="strike-area">
+                        <div class="strike-text">Кликните для удара!</div>
+                        <div class="strike-hint">👊 Удар</div>
+                    </div>
+                </div>
+                
+                <div id="combat-damage-display" class="damage-display hidden">
+                    <div class="damage-number" id="damage-number">-5</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rod-panel">
+            <div class="panel-header">Ваша экипировка</div>
+            <div id="rod-info" class="rod-card">
+                Загрузка...
+            </div>
+        </div>
+
+        <ul id="log" class="event-log"></ul>
+    </div>
+
+<div class="menu-grid">
+    <button id="inventory-btn" class="secondary-btn">🎒 Инвентарь</button>
+    <button id="achievements-btn" class="secondary-btn">🏆 Достижения</button>
+    <button id="settings-btn" class="secondary-btn">⚙️ Настройки</button>
+</div>
+
+<div id="achievements-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Ваши достижения</h3>
+            <button id="close-ach-modal">✖</button>
+        </div>
+        <div id="achievements-list" class="ach-list">
+            </div>
+    </div>
+</div>
+
+<div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>⚙️ Настройки</h3>
+            <button id="close-settings-modal">✖</button>
+        </div>
+        <div class="settings-content">
+            <div class="settings-section">
+                <div class="settings-item">
+                    <label class="settings-label">Режим взаимодействия</label>
+                    <div class="settings-description">
+                        <strong>ОТКЛЮЧЕНО (нормальный режим)</strong>: наведение → tooltip, ПКМ → меню<br>
+                        <strong>ВКЛЮЧЕНО (мобильный)</strong>: одиночный тап → характеристики, двойной тап → надеть
+                    </div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="action-menu-toggle" class="toggle-input">
+                        <label for="action-menu-toggle" class="toggle-label"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Магазин и Инвентарь</h3>
+            <button id="close-modal">✖</button>
+        </div>
+        
+        <div class="shop-section">
+            <button id="buy-btn-modal" class="main-btn">
+                🎲 Купить случайную удочку (100 💰)
+            </button>
+        </div>
+
+        <div class="inventory-section">
+            <h4>Ваши удочки:</h4>
+            <div id="inventory-grid" class="inventory-grid">
+                <!-- Сеточный инвентарь -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tooltip для характеристик удочки -->
+<div id="rod-tooltip" class="tooltip hidden">
+    <div class="tooltip-header">
+        <span class="tooltip-name"></span>
+    </div>
+    <div class="tooltip-stats"></div>
+</div>
+
+<!-- Context Menu для действий с удочкой -->
+<div id="rod-context-menu" class="context-menu hidden">
+    <div class="context-menu-item" data-action="select">✓ Выбрать</div>
+    <div class="context-menu-item" data-action="enchant">✨ Улучшить</div>
+    <div class="context-menu-item" data-action="rename">📝 Переименовать</div>
+    <div class="context-menu-item" data-action="duplicate">📋 Дублировать</div>
+    <div class="context-menu-item danger" data-action="delete">🗑️ Удалить</div>
+</div>
+
+<!-- Bottom Sheet для мобильного режима -->
+<div id="rod-bottom-sheet" class="bottom-sheet hidden">
+    <div class="bottom-sheet-content">
+        <div class="bottom-sheet-header">
+            <h3 id="bottom-sheet-title">Удочка</h3>
+            <button id="close-bottom-sheet" class="btn-close">✖</button>
+        </div>
+        
+        <div class="bottom-sheet-body">
+            <div id="bottom-sheet-stats" class="bottom-sheet-stats">
+                <!-- Характеристики здесь -->
+            </div>
+        </div>
+        
+        <div class="bottom-sheet-actions">
+            <button class="action-btn" data-action="upgrade">⬆️ Улучшить</button>
+            <button class="action-btn" data-action="equip">✅ Надеть</button>
+            <button class="action-btn danger" data-action="delete">✖️ Удалить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal для улучшения удочки -->
+<div id="upgrade-modal" class="modal-overlay hidden">
+    <div class="modal-content upgrade-modal-content">
+        <div class="modal-header">
+            <h3 id="upgrade-modal-title">Улучшение удочки</h3>
+            <button id="close-upgrade-modal" class="close-btn">✖</button>
+        </div>
+        
+        <div class="upgrade-modal-body">
+            <!-- Название и текущая информация -->
+            <div class="upgrade-rod-name" id="upgrade-rod-name">Удочка</div>
+            
+            <!-- Текущий уровень -->
+            <div class="upgrade-level-display">
+                <div class="upgrade-section">
+                    <div class="level-label">Текущий уровень</div>
+                    <div class="level-current" id="upgrade-level-current">0</div>
+                </div>
+                <div class="upgrade-arrow">→</div>
+                <div class="upgrade-section">
+                    <div class="level-label">После улучшения</div>
+                    <div class="level-next" id="upgrade-level-next">1</div>
+                </div>
+            </div>
+            
+            <!-- Изменение урона -->
+            <div class="upgrade-damage-section">
+                <div class="damage-change-label">💥 Изменение урона</div>
+                <div class="damage-display-row">
+                    <div class="damage-current" id="upgrade-damage-current">5-10</div>
+                    <div class="damage-arrow">→</div>
+                    <div class="damage-next" id="upgrade-damage-next">6-11</div>
+                </div>
+            </div>
+            
+            <!-- Стоимость и шансы -->
+            <div class="upgrade-info-box">
+                <div class="info-row">
+                    <span class="info-label">💰 Стоимость:</span>
+                    <span class="info-value" id="upgrade-cost">10</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">📊 Вероятность:</span>
+                    <span class="info-value" id="upgrade-chance">100%</span>
+                </div>
+            </div>
+            
+            <!-- Результат анимации -->
+            <div id="upgrade-result" class="upgrade-result hidden">
+                <div class="result-text" id="upgrade-result-text"></div>
+            </div>
+            
+            <!-- Кнопка улучшить -->
+            <button id="upgrade-btn" class="main-btn upgrade-btn">
+                ⬆️ Улучшить
+            </button>
+        </div>
+    </div>
+</div>
+
+<button id="leaderboard-btn" class="btn-circle">🏆</button>
+
+<div id="leaderboard-modal" class="modal hidden">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h2>Таблица лидеров</h2>
+            <button id="close-leaderboard" class="close-btn">&times;</button>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="balance">💰 Богачи</button>
+            <button class="tab-btn" data-tab="catch">🎣 Рекорды</button>
+        </div>
+
+        <div id="leaderboard-list" class="leader-list">
+            </div>
+    </div>
+</div>
+
+
+    <!-- Модули в правильном порядке загрузки -->
+    <!-- Константы теперь загружаются с сервера в initializeGame() -->
+    
+    <!-- Базовые утилиты и API -->
+    <script src="/static/js/modules/api.js"></script>
+    <script src="/static/js/modules/log.js"></script>
+    <script src="/static/js/modules/ui.js"></script>
+    
+    <!-- Модули которые используют константы -->
+    <script src="/static/js/modules/rod.js"></script>
+    <script src="/static/js/modules/tooltip.js"></script>
+    
+    <!-- Остальные модули -->
+    <script src="/static/js/modules/combat.js"></script>
+    <script src="/static/js/modules/inventory.js"></script>
+    <script src="/static/js/modules/upgrade.js"></script>
+    <script src="/static/js/modules/leaderboard.js"></script>
+    <script src="/static/js/modules/achievement.js"></script>
+    <script src="/static/js/modules/settings.js"></script>
+    
+    <!-- Главный файл игры -->
+    <script src="/static/js/game.js"></script>
+</body>
+</html>

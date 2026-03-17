@@ -1,0 +1,824 @@
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+const user = tg.initDataUnsafe?.user || { id: 1, first_name: "Test User" };
+
+const UI = {
+    balance: document.getElementById('balance'),
+    name: document.getElementById('username'),
+    rodInfo: document.getElementById('rod-info'),
+    log: document.getElementById('log'),
+    fishBtn: document.getElementById('fish-btn'),
+    modal: document.getElementById('modal'),
+    invBtn: document.getElementById('inventory-btn'),
+    closeModal: document.getElementById('close-modal'),
+    invGrid: document.getElementById('inventory-grid'),
+    buyBtnModal: document.getElementById('buy-btn-modal'),
+    priceTag: document.getElementById('price-tag'),
+    arhBtn: document.getElementById('achievements-btn'),
+    arhModal: document.getElementById('achievements-modal'),
+    arhList: document.getElementById('achievements-list'),
+    closeArhModal: document.getElementById('close-achievements-modal'),
+    floater: document.getElementById('float-emoji'),
+    tooltip: document.getElementById('rod-tooltip'),
+    contextMenu: document.getElementById('rod-context-menu'),
+    combatScreen: document.getElementById('combat-screen')
+};
+
+let state = {
+    isLoading: false,
+    balance: 0
+};
+
+// Mapping of property keys to their display names with emojis
+const ROD_PROPERTY_NAMES = {
+    'reward': '💰 Множитель награды',
+    'luck': '🍀 Удача (Редкое)',
+    'speed': '⚡ Скорость',
+    'xp': '✨ Опыт',
+    'durability': '🛡️ Прочность',
+    'crit': '💥 Крит-удар'
+};
+
+// Property descriptions (durability is no longer a property)
+const ROD_PROPERTY_DESCRIPTIONS = {
+    'reward': 'Увеличивает количество монет, получаемых за улов',
+    'luck': 'Повышает шанс поймать рыбу редкой редкости',
+    'speed': 'Ускоряет скорость рыбалки (сокращает время между забросами)',
+    'xp': 'Увеличивает количество опыта за улов',
+    'crit': 'Шанс нанести критический удар и получить 2.5x награду'
+};
+
+// Property tier values (synced with config.py)
+const ROD_PROPERTY_VALUES = {
+    'reward': {
+        1: 1.0, 2: 1.2, 3: 1.4, 4: 1.7, 5: 2.0,
+        6: 2.5, 7: 3.2, 8: 4.0, 9: 5.5, 10: 8.0
+    },
+    'luck': {
+        1: 0.0, 2: 0.05, 3: 0.10, 4: 0.15, 5: 0.25,
+        6: 0.35, 7: 0.50, 8: 0.75, 9: 1.0, 10: 1.5
+    },
+    'speed': {
+        1: 0.0, 2: 0.05, 3: 0.10, 4: 0.15, 5: 0.25,
+        6: 0.35, 7: 0.50, 8: 0.70, 9: 1.0, 10: 1.5
+    },
+    'xp': {
+        1: 1.0, 2: 1.1, 3: 1.2, 4: 1.4, 5: 1.7,
+        6: 2.0, 7: 2.5, 8: 3.2, 9: 4.0, 10: 5.5
+    },
+    'crit': {
+        1: 0.0, 2: 0.02, 3: 0.05, 4: 0.08, 5: 0.12,
+        6: 0.17, 7: 0.25, 8: 0.35, 9: 0.50, 10: 0.75
+    }
+};
+
+// Format property value for display
+function formatPropertyValue(propName, tier) {
+    const value = ROD_PROPERTY_VALUES[propName]?.[tier];
+    if (value === undefined) return '';
+    
+    switch (propName) {
+        case 'reward':
+        case 'xp':
+            return `x${value.toFixed(1)}`;
+        case 'luck':
+        case 'speed':
+        case 'crit':
+            return `+${(value * 100).toFixed(0)}%`;
+        case 'durability':
+            return value === -1 ? '∞' : `${value} раз`;
+        default:
+            return value;
+    }
+}
+
+async function request(endpoint, body = {}) {
+    try {
+        const res = await fetch(`/api/${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...user, ...body })
+        });
+        if (!res.ok) {
+            let errMsg = 'Ошибка сервера';
+            try {
+                const err = await res.json();
+                errMsg = err.detail || 'Ошибка сервера';
+            } catch (e) {
+                // Если не JSON, пытаемся получить текст
+                try {
+                    errMsg = await res.text();
+                } catch (e2) {
+                    errMsg = `Ошибка ${res.status}: ${res.statusText}`;
+                }
+            }
+            throw new Error(errMsg);
+        }
+        return await res.json();
+    } catch (e) {
+        console.error(`Ошибка в запросе ${endpoint}:`, e);
+        showLog(e.message, 'error');
+        throw e;
+    }
+}
+
+function showLog(text, type = 'info') {
+    if (!UI.log) return;
+    const li = document.createElement('li');
+    li.className = `log-item ${type}`;
+    li.innerHTML = `<span>${new Date().toLocaleTimeString()}</span> ${text}`;
+    UI.log.prepend(li);
+    if (UI.log.children.length > 20) UI.log.lastChild.remove();
+}
+
+function updateBalance(newBalance) {
+    state.balance = newBalance;
+    if (UI.balance) {
+        UI.balance.innerText = newBalance.toLocaleString();
+        UI.balance.classList.add('pop');
+        setTimeout(() => UI.balance.classList.remove('pop'), 200);
+    }
+}
+
+function renderRod(rod) {
+    if (!UI.rodInfo) return;
+    
+    if (!rod) {
+        UI.rodInfo.innerHTML = '<div class="empty">Нет удочки</div>';
+        return;
+    }
+
+    // Парсим свойства удочки
+    const properties = typeof rod.properties === 'string' ? JSON.parse(rod.properties) : (rod.properties || {});
+    
+    // Получаем прочность
+    const durability = rod.durability !== undefined ? rod.durability : 0;
+    
+    // Получаем базовый урон
+    const minDamage = rod.min_damage || 1;
+    const maxDamage = rod.max_damage || 3;
+    const damageRange = `${minDamage}-${maxDamage}`;
+    
+    let propertiesHTML = '';
+    if (Object.keys(properties).length > 0) {
+        propertiesHTML = '<div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 8px;">';
+        
+        // Определяем порядок отображения свойств (без durability)
+        const propOrder = ['reward', 'luck', 'speed', 'xp', 'crit'];
+        
+        for (const propName of propOrder) {
+            if (propName in properties) {
+                const tier = properties[propName];
+                const displayName = ROD_PROPERTY_NAMES[propName] || propName;
+                const value = formatPropertyValue(propName, tier);
+                propertiesHTML += `<div style="margin: 4px 0; font-size: 0.9em;">
+                    ${displayName} ${value} <span style="font-size: 0.8em; color: rgba(255,255,255,0.5);">(${tier}/10)</span>
+                </div>`;
+            }
+        }
+        propertiesHTML += '</div>';
+    }
+
+    // Добавляем прочность отдельно
+    const durabilityText = durability > 0 ? `${durability} забросов` : 'Сломана';
+    const durabilityColor = durability > 100 ? '#34c759' : (durability > 50 ? '#ff9500' : '#ff3b30');
+
+    UI.rodInfo.className = `rod-card rarity-${rod.rarity}`;
+    UI.rodInfo.innerHTML = `
+        <div class="rod-name rarity-${rod.rarity}">${rod.name}</div>
+        <div style="font-size: 0.9em; margin-top: 8px; font-weight: 600; color: #ff6b6b;">
+            💥 Базовый урон: <b>${damageRange}</b>
+        </div>
+        <div style="font-size: 0.85em; margin-top: 4px; color: rgba(255,255,255,0.7);">
+            Редкость: <b>${rod.rarity}</b> | Свойств: <b>${Object.keys(properties).length}/5</b>
+        </div>
+        <div style="font-size: 0.85em; margin-top: 6px; color: ${durabilityColor}; font-weight: 600;">
+            💪 Прочность: <b>${durabilityText}</b>
+        </div>
+        ${propertiesHTML}
+    `;
+}
+
+async function onFish() {
+    if (state.isLoading) return;
+    state.isLoading = true;
+    
+    if (UI.fishBtn) {
+        UI.fishBtn.disabled = true;
+        UI.fishBtn.innerText = "Тянем...";
+    }
+    if (UI.floater) UI.floater.classList.add('bobbing');
+
+    try {
+        await new Promise(r => setTimeout(r, 200));
+        const data = await request('fish'); // Получаем данные от сервера
+        
+        // Обновляем прочность если удочка не сломалась
+        if (!data.is_broken) {
+            if (state.activeRod && data.durability_left !== undefined) {
+                state.activeRod.durability = data.durability_left;
+                renderRod(state.activeRod);
+            }
+        }
+        
+        // Показываем экран боевки
+        showCombatScreen(data);
+        
+        tg.HapticFeedback.impactOccurred('heavy');
+
+        if (data.is_broken) {
+            showLog("❌ ВАША УДОЧКА СЛОМАЛАСЬ!", "error");
+            tg.HapticFeedback.notificationOccurred('error');
+            state.activeRod = null; // Обнуляем в стейте
+            renderRod(null);        // Стираем с экрана
+        }
+
+    } catch (e) {
+        console.error(e);
+        tg.HapticFeedback.notificationOccurred('error');
+    } finally {
+        state.isLoading = false;
+        if (UI.fishBtn) {
+            UI.fishBtn.disabled = false;
+            UI.fishBtn.innerText = "Забросить удочку";
+        }
+        if (UI.floater) UI.floater.classList.remove('bobbing');
+    }
+}
+// Функция показа tooltip с характеристиками удочки
+function showTooltip(rod, event) {
+    if (!UI.tooltip || !rod) return;
+    
+    const tooltipName = UI.tooltip.querySelector('.tooltip-name');
+    const tooltipStats = UI.tooltip.querySelector('.tooltip-stats');
+    
+    // Устанавливаем имя и редкость
+    tooltipName.textContent = rod.name;
+    tooltipName.className = `tooltip-name rarity-${rod.rarity}`;
+    
+    // Добавляем класс редкости к контейнеру свойств
+    tooltipStats.className = `tooltip-stats rarity-${rod.rarity}`;
+    
+    // Парсим свойства удочки
+    const properties = typeof rod.properties === 'string' ? JSON.parse(rod.properties) : (rod.properties || {});
+    
+    // Получаем базовый урон
+    const minDamage = rod.min_damage || 1;
+    const maxDamage = rod.max_damage || 3;
+    
+    let statsHTML = `<div style="font-size: 0.9em; font-weight: 600; color: #ff6b6b; margin-bottom: 8px;">💥 Урон: ${minDamage}-${maxDamage}</div>`;
+    statsHTML += `<div class="tooltip-stat-header">📊 ${Object.keys(properties).length}/5 свойств</div>`;
+    
+    const propOrder = ['reward', 'luck', 'speed', 'xp', 'crit'];
+    for (const propName of propOrder) {
+        if (propName in properties) {
+            const tier = properties[propName];
+            const displayName = ROD_PROPERTY_NAMES[propName] || propName;
+            const description = ROD_PROPERTY_DESCRIPTIONS[propName] || '';
+            const value = formatPropertyValue(propName, tier);
+            
+            statsHTML += `<div class="tooltip-stat-item">
+                <div class="tooltip-stat-title">${displayName} <span class="tooltip-stat-value">${value}</span></div>
+                <div class="tooltip-stat-tier">Уровень: ${tier}/10</div>
+                <div class="tooltip-stat-desc">${description}</div>
+            </div>`;
+        }
+    }
+    
+    // Добавляем прочность в конце (не как свойство, а как характеристика)
+    const durability = rod.durability || 0;
+    statsHTML += `<div style="font-size: 0.85em; color: rgba(255,255,255,0.6); margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+        💪 Прочность: <b>${durability} забросов</b>
+    </div>`;
+    
+    tooltipStats.innerHTML = statsHTML;
+    
+    // Позиционирование tooltip (поддержка тач-событий)
+    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+    
+    const x = clientX + 15;
+    const y = clientY + 15;
+    
+    UI.tooltip.style.left = `${x}px`;
+    UI.tooltip.style.top = `${y}px`;
+    UI.tooltip.classList.remove('hidden');
+}
+
+// Функции для боевки с рыбой
+let currentCombatFish = null;
+let strikeListener = null;  // Храним ссылку на обработчик
+
+function showCombatScreen(fishData) {
+    const combatScreen = document.getElementById('combat-screen');
+    const main = document.querySelector('main');
+    const rodPanel = document.querySelector('.rod-panel');
+    
+    if (!combatScreen) return;
+    
+    currentCombatFish = fishData;
+    
+    // Обновляем UI
+    document.getElementById('combat-fish-emoji').textContent = fishData.emoji;
+    document.getElementById('combat-fish-name').textContent = fishData.fish_name;
+    
+    // Обновляем HP bar
+    updateCombatHP(fishData.hp, fishData.max_hp);
+    
+    // Показываем боевку и скрываем основное
+    combatScreen.classList.remove('hidden');
+    if (main) main.style.display = 'none';
+    if (rodPanel) rodPanel.style.display = 'none';
+    
+    // Переустанавливаем обработчик для удара
+    setupStrikeListener();
+}
+
+function setupStrikeListener() {
+    const strikeArea = document.getElementById('strike-area');
+    if (!strikeArea) return;
+    
+    // Очищаем inline стили (особенно pointerEvents который может быть 'none' с предыдущего боя)
+    strikeArea.style.pointerEvents = 'auto';
+    strikeArea.style.opacity = '1';
+    strikeArea.style.cursor = 'pointer';
+    
+    // Клонируем элемент, чтобы очистить все старые listeners
+    const newStrikeArea = strikeArea.cloneNode(true);
+    strikeArea.parentNode.replaceChild(newStrikeArea, strikeArea);
+    
+    // Добавляем обработчик к новому элементу
+    const updatedStrikeArea = document.getElementById('strike-area');
+    if (!updatedStrikeArea) return;
+    
+    // Очищаем стили в новом элементе тоже
+    updatedStrikeArea.style.pointerEvents = 'auto';
+    updatedStrikeArea.style.opacity = '1';
+    updatedStrikeArea.style.cursor = 'pointer';
+    
+    updatedStrikeArea.addEventListener('click', performStrike);
+    updatedStrikeArea.addEventListener('touchend', performStrike);
+}
+
+function updateCombatHP(hp, maxHp) {
+    const percentage = Math.max(0, (hp / maxHp) * 100);
+    const hpFill = document.getElementById('combat-hp-fill');
+    const hpText = document.getElementById('combat-hp-text');
+    
+    if (hpFill) hpFill.style.width = `${percentage}%`;
+    if (hpText) hpText.textContent = `${hp}/${maxHp}`;
+}
+
+async function performStrike() {
+    if (!currentCombatFish) return;
+    
+    try {
+        const strikeArea = document.getElementById('strike-area');
+        if (strikeArea) strikeArea.style.pointerEvents = 'none';
+        
+        const data = await request('strike-fish');
+        
+        // Показываем урон
+        showDamageNumber(data.damage);
+        
+        // Обновляем HP
+        updateCombatHP(data.hp, data.max_hp);
+        
+        tg.HapticFeedback.impactOccurred('medium');
+        
+        if (!data.is_alive) {
+            // Рыба мертва! Показываем лут
+            await new Promise(r => setTimeout(r, 500));
+            showCombatVictory(data);
+        } else {
+            if (strikeArea) strikeArea.style.pointerEvents = 'auto';
+        }
+    } catch (e) {
+        console.error('Ошибка при ударе:', e);
+        // Восстанавливаем pointerEvents даже при ошибке
+        const strikeArea = document.getElementById('strike-area');
+        if (strikeArea) strikeArea.style.pointerEvents = 'auto';
+        tg.HapticFeedback.notificationOccurred('error');
+    }
+}
+
+function showDamageNumber(damage) {
+    const damageDisplay = document.getElementById('combat-damage-display');
+    const damageNumber = document.getElementById('damage-number');
+    
+    if (damageDisplay && damageNumber) {
+        damageNumber.textContent = `-${damage}`;
+        damageDisplay.classList.remove('hidden');
+        
+        // Анимация и удаление
+        setTimeout(() => {
+            damageDisplay.classList.add('hidden');
+        }, 600);
+    }
+}
+
+function showCombatVictory(data) {
+    const combatScreen = document.getElementById('combat-screen');
+    const main = document.querySelector('main');
+    const rodPanel = document.querySelector('.rod-panel');
+    
+    if (!combatScreen) return;
+    
+    // Обновляем баланс
+    updateBalance(data.balance);
+    
+    // Показываем лог с наградой
+    showLog(
+        `Победа! ${currentCombatFish.emoji} <b>${currentCombatFish.fish_name}</b> - награда: +${data.reward} 💰`, 
+        `rarity-${currentCombatFish.display_rarity}`
+    );
+    
+    // Закрываем экран боевки и показываем основное
+    combatScreen.classList.add('hidden');
+    if (main) main.style.display = 'block';
+    if (rodPanel) rodPanel.style.display = 'block';
+    
+    // Проверяем новые достижения
+    if (data.new_achievements && data.new_achievements.length > 0) {
+        data.new_achievements.forEach(ach => {
+            showLog(`🏆 Достижение разблокировано: ${ach.name}!`, 'success');
+        });
+    }
+    
+    currentCombatFish = null;
+    tg.HapticFeedback.notificationOccurred('success');
+}
+function hideTooltip() {
+    if (UI.tooltip) {
+        UI.tooltip.classList.add('hidden');
+    }
+}
+
+// Функция для показа контекстного меню
+let contextMenuTargetRod = null;
+
+function showContextMenu(rod, event) {
+    if (!UI.contextMenu) return;
+    
+    contextMenuTargetRod = rod;
+    
+    // Позиционируем меню у клика
+    const x = event.clientX;
+    const y = event.clientY;
+    
+    UI.contextMenu.style.left = `${x}px`;
+    UI.contextMenu.style.top = `${y}px`;
+    UI.contextMenu.classList.remove('hidden');
+    
+    tg.HapticFeedback.impactOccurred('light');
+}
+
+// Функция скрытия контекстного меню
+function hideContextMenu() {
+    if (UI.contextMenu) {
+        UI.contextMenu.classList.add('hidden');
+        contextMenuTargetRod = null;
+    }
+}
+
+// Обработчик действий контекстного меню
+function handleContextMenuAction(action) {
+    if (!contextMenuTargetRod) return;
+    
+    const rod = contextMenuTargetRod;
+    
+    switch(action) {
+        case 'select':
+            window.equipRod(rod.id);
+            break;
+        case 'delete':
+            if (confirm(`Удалить "${rod.name}" навсегда?`)) {
+                window.deleteRod(rod.id);
+            }
+            break;
+        case 'enchant':
+            showLog('✨ Улучшение скоро будет доступно', '#ffaa00');
+            break;
+        case 'rename':
+            showLog('📝 Переименование скоро будет доступно', '#ffaa00');
+            break;
+        case 'duplicate':
+            showLog('📋 Дублирование скоро будет доступно', '#ffaa00');
+            break;
+    }
+    
+    hideContextMenu();
+}
+
+// Обновленная функция инвентаря с сеточным отображением
+// Данные для перетаскивания
+let draggedRodIndex = null;
+let draggedRodData = null;
+
+async function refreshInventory() {
+    try {
+        const data = await request('login');
+        if (!UI.invGrid) return;
+        UI.invGrid.innerHTML = '';
+        
+        // Всего 12 слотов (3 ряда по 4)
+        const totalSlots = 12;
+        
+        for (let i = 0; i < totalSlots; i++) {
+            const rod = data.rods[i];
+            const slot = document.createElement('div');
+            slot.dataset.slotIndex = i;
+            
+            if (rod) {
+                // Слот с удочкой
+                slot.className = `inventory-slot ${rod.is_active ? 'active' : ''} rarity-${rod.rarity}`;
+                slot.draggable = true;
+                slot.dataset.rodId = rod.id;
+                
+                // Получаем прочность для индикатора (теперь это числовое значение)
+                const durability = rod.durability;
+                let durabilityIndicator = '';
+                let durabilityClass = '';
+                
+                if (durability !== undefined && durability !== null) {
+                    if (durability <= 50) {
+                        durabilityIndicator = '⚠️';
+                        durabilityClass = 'durability-low';
+                    } else if (durability <= 100) {
+                        durabilityIndicator = '⚡';
+                        durabilityClass = 'durability-medium';
+                    } else {
+                        durabilityIndicator = '💪';
+                        durabilityClass = 'durability-high';
+                    }
+                }
+                
+                slot.innerHTML = `
+                    <div class="item-icon">🎣</div>
+                    <div class="item-name rarity-${rod.rarity}">${rod.name}</div>
+                    ${durabilityIndicator ? `<div class="item-durability ${durabilityClass}">${durabilityIndicator}</div>` : ''}
+                `;
+                
+                // Обработчики событий для tooltip и действий
+                slot.addEventListener('mouseenter', (e) => showTooltip(rod, e));
+                slot.addEventListener('mousemove', (e) => showTooltip(rod, e));
+                slot.addEventListener('mouseleave', hideTooltip);
+                
+                // Клик (ЛКМ) - показать контекстное меню
+                slot.addEventListener('click', (e) => {
+                    // Не срабатывает если идет перетаскивание
+                    if (!draggedRodData) {
+                        e.stopPropagation();
+                        hideTooltip();
+                        showContextMenu(rod, e);
+                    }
+                });
+                
+                // Отключена поддержка правого клика (contextmenu) для лучшей мобильной поддержки
+                
+                // Drag and Drop (ARPG-стиль)
+                slot.addEventListener('dragstart', (e) => {
+                    draggedRodIndex = i;
+                    draggedRodData = rod;
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/html', rod.id);
+                    slot.classList.add('dragging');
+                    tg.HapticFeedback.impactOccurred('light');
+                });
+                
+                slot.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (draggedRodData && draggedRodIndex !== i) {
+                        slot.classList.add('drag-over');
+                        e.dataTransfer.dropEffect = 'move';
+                    }
+                });
+                
+                slot.addEventListener('dragleave', (e) => {
+                    slot.classList.remove('drag-over');
+                });
+                
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    slot.classList.remove('drag-over');
+                    if (draggedRodIndex !== null && draggedRodIndex !== i) {
+                        swapRodsInInventory(draggedRodIndex, i);
+                        tg.HapticFeedback.impactOccurred('medium');
+                    }
+                });
+                
+                slot.addEventListener('dragend', (e) => {
+                    slot.classList.remove('dragging');
+                    // Удаляем drag-over со всех слотов
+                    document.querySelectorAll('.inventory-slot.drag-over').forEach(s => {
+                        s.classList.remove('drag-over');
+                    });
+                    draggedRodIndex = null;
+                    draggedRodData = null;
+                });
+                
+            } else {
+                // Пустой слот
+                slot.className = 'inventory-slot empty';
+                slot.innerHTML = `
+                    <div class="item-icon" style="opacity: 0.3;">+</div>
+                `;
+                
+                // Пустой слот может быть целью для дропа (но не может быть перетаскиваемым)
+                slot.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (draggedRodData) {
+                        slot.classList.add('drag-over');
+                        e.dataTransfer.dropEffect = 'move';
+                    }
+                });
+                
+                slot.addEventListener('dragleave', (e) => {
+                    slot.classList.remove('drag-over');
+                });
+                
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    slot.classList.remove('drag-over');
+                    if (draggedRodIndex !== null && draggedRodIndex !== i) {
+                        swapRodsInInventory(draggedRodIndex, i);
+                        tg.HapticFeedback.impactOccurred('medium');
+                    }
+                });
+            }
+            
+            UI.invGrid.appendChild(slot);
+        }
+    } catch (e) { console.error("Ошибка обновления инвентаря", e); }
+}
+
+// Функция для обмена удочек в инвентаре
+async function swapRodsInInventory(fromIndex, toIndex) {
+    try {
+        await request('swap-rods', { from_index: fromIndex, to_index: toIndex });
+        await refreshInventory();
+    } catch (e) { console.error("Ошибка при обмене удочек", e); }
+}
+
+window.equipRod = async (rodId) => {
+    try {
+        await request('set-active', { rod_id: rodId });
+        tg.HapticFeedback.impactOccurred('medium');
+        const data = await request('login'); 
+        state.activeRod = data.active_rod; 
+        renderRod(state.activeRod);
+        refreshInventory();
+    } catch (e) {
+        console.error("Ошибка при смене удочки", e);
+    }
+};
+window.deleteRod = async (rodId) => {
+    await request('delete-rod', { rod_id: rodId });
+    const data = await request('login');
+    renderRod(data.active_rod);
+    refreshInventory();
+};
+
+async function init() {
+    console.log("Приложение инициализируется...");
+    if (UI.name) UI.name.innerText = user.first_name;
+    
+    try {
+        const data = await request('login');
+        console.log("Данные логина получены:", data); // Проверка в консоли
+        
+        updateBalance(data.balance);
+        
+        if (data.active_rod) {
+            state.activeRod = data.active_rod;
+            renderRod(state.activeRod); // Рисуем удочку сразу
+            console.log("Удочка отрисована:", state.activeRod.name);
+        } else {
+            renderRod(null); // Покажет "Нет удочки"
+        }
+        
+        if (UI.priceTag) UI.priceTag.innerText = data.rod_price;
+    } catch (e) {
+        console.error("Ошибка загрузки профиля:", e);
+        showLog("Ошибка загрузки профиля", "error");
+    }
+
+    // Слушатели событий
+    if (UI.fishBtn) UI.fishBtn.onclick = onFish;
+    
+    if (UI.invBtn) UI.invBtn.onclick = () => {
+        UI.modal.classList.remove('hidden');
+        refreshInventory();
+    };
+
+    if (UI.closeModal) UI.closeModal.onclick = () => {
+        UI.modal.classList.add('hidden');
+        hideTooltip();
+        hideContextMenu();
+    };
+
+    if (UI.buyBtnModal) UI.buyBtnModal.onclick = async () => {
+        try {
+            const data = await request('buy-rod');
+            updateBalance(data.balance);
+            refreshInventory(); 
+            showLog(`🎲 Куплена: ${data.rod.name}. Наденьте её в инвентаре!`, 'success');
+        } catch (e) {
+            if (e.message && e.message.includes('Инвентарь полон')) {
+                showLog("🎒 Инвентарь полон! Удалите лишние удочки.", 'error');
+            }
+        }
+    };
+
+    // Контекстное меню - обработчики для пунктов меню
+    if (UI.contextMenu) {
+        const menuItems = UI.contextMenu.querySelectorAll('.context-menu-item');
+        menuItems.forEach(item => {
+            item.onclick = (e) => {
+                e.stopPropagation();
+                const action = item.getAttribute('data-action');
+                handleContextMenuAction(action);
+            };
+        });
+    }
+
+    // Закрытие контекстного меню при клике вне его
+    document.addEventListener('click', (e) => {
+        if (UI.contextMenu && !UI.contextMenu.classList.contains('hidden')) {
+            // Не закрываем если клик на самом меню
+            if (!UI.contextMenu.contains(e.target)) {
+                hideContextMenu();
+            }
+        }
+    });
+}
+
+// Добавляем в UI
+UI.achBtn = document.getElementById('achievements-btn');
+UI.achModal = document.getElementById('achievements-modal');
+UI.achList = document.getElementById('achievements-list');
+UI.closeAchModal = document.getElementById('close-ach-modal');
+
+// Открытие
+UI.achBtn.onclick = async () => {
+    UI.achModal.classList.remove('hidden');
+    const achievements = await request('achievements');
+    
+    UI.achList.innerHTML = '';
+    achievements.forEach(ach => {
+        const div = document.createElement('div');
+        div.className = `achievement-card ${ach.is_unlocked ? 'unlocked' : ''}`;
+        div.innerHTML = `
+            <div class="ach-icon">${ach.is_unlocked ? '🏆' : '🔒'}</div>
+            <div class="ach-info">
+                <b>${ach.name}</b>
+                <span>${ach.desc}</span>
+            </div>
+        `;
+        UI.achList.appendChild(div);
+    });
+};
+
+UI.closeAchModal.onclick = () => UI.achModal.classList.add('hidden');
+
+
+
+UI.leadBtn = document.getElementById('leaderboard-btn');
+UI.leadModal = document.getElementById('leaderboard-modal');
+UI.leadList = document.getElementById('leaderboard-list');
+UI.closeLead = document.getElementById('close-leaderboard');
+
+let leaderboardData = { by_balance: [], by_catch: [] };
+
+const renderLeaderboard = (type) => {
+    const data = type === 'balance' ? leaderboardData.by_balance : leaderboardData.by_catch;
+    UI.leadList.innerHTML = data.map((player, index) => `
+        <div class="leader-item">
+            <span>${index + 1}. ${player.username}</span>
+            <span>${player.balance || player.max_catch} ${type === 'balance' ? '💰' : '✨'}</span>
+        </div>
+    `).join('') || '<div class="empty">Пока пусто</div>';
+};
+
+UI.leadBtn.onclick = async () => {
+    UI.leadModal.classList.remove('hidden');
+    leaderboardData = await request('leaderboard');
+    renderLeaderboard('balance'); // По умолчанию топ по деньгам
+};
+
+// Переключение табов
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.onclick = (e) => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        renderLeaderboard(e.target.dataset.tab);
+    };
+});
+
+UI.closeLead.onclick = () => UI.leadModal.classList.add('hidden');
+
+
+
+
+init();
