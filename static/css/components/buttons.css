@@ -1,0 +1,182 @@
+/* ================================================================
+   BUTTONS.CSS - Все кнопки приложения
+   ================================================================ */
+
+/* Main button (основная кнопка "Забросить удочку") */
+.main-btn {
+    width: 100%;
+    height: 70px;
+    padding: 16px;
+    background: var(--accent-color);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.1s;
+    box-shadow: 0 6px 20px rgba(0, 122, 255, 0.3);
+}
+
+.main-btn:active {
+    transform: scale(0.98);
+}
+
+/* Secondary buttons (нижнее меню) */
+.menu-grid {
+    position: fixed;
+    bottom: max(0px, env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px calc(40px + max(0px, env(safe-area-inset-bottom, 0px))) 20px;
+    background: var(--bg-color);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+}
+
+.secondary-btn {
+    background: var(--secondary-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 18px;
+    border-radius: 16px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.secondary-btn:active {
+    transform: scale(0.96);
+}
+
+/* Circular button */
+.btn-circle {
+    position: fixed;
+    bottom: 129px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.btn-circle:active {
+    transform: scale(0.92);
+}
+
+/* Close button */
+.close-btn, #close-modal, #close-ach-modal {
+    background: var(--secondary-bg);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.close-btn:active, #close-modal:active, #close-ach-modal:active {
+    transform: scale(0.92);
+}
+
+/* Small action buttons */
+.btn-small {
+    border: none;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 10px 16px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-small:active {
+    transform: scale(0.92);
+    opacity: 0.8;
+}
+
+/* Equip button */
+.btn-equip {
+    background-color: var(--success-color);
+    color: white;
+    min-width: 80px;
+}
+
+/* Delete button */
+.btn-delete {
+    background-color: rgba(255, 59, 48, 0.15);
+    color: var(--error-color);
+    width: 40px;
+    border: 1px solid rgba(255, 59, 48, 0.2);
+}
+
+/* Tab buttons */
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: var(--secondary-bg);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+    background: var(--accent-color);
+}
+
+.tab-btn:active {
+    transform: scale(0.96);
+}
+
+/* Item actions container */
+.item-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.item-actions span {
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}

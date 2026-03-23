@@ -1,0 +1,82 @@
+/* ================================================================
+   SETTINGS.CSS - Модал настроек
+   ================================================================ */
+
+.settings-content {
+    padding: 16px 0;
+}
+
+.settings-section {
+    padding: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-section:first-child {
+    border-top: none;
+}
+
+.settings-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.settings-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.settings-description {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.toggle-input {
+    display: none;
+}
+
+.toggle-label {
+    display: inline-flex;
+    align-items: center;
+    width: 50px;
+    height: 28px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    position: relative;
+    padding: 2px;
+    box-sizing: border-box;
+}
+
+.toggle-label::after {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border-radius: 12px;
+    transition: transform 0.3s;
+    transform: translateX(0);
+}
+
+.toggle-input:checked + .toggle-label {
+    background-color: var(--success-color);
+}
+
+.toggle-input:checked + .toggle-label::after {
+    transform: translateX(22px);
+}
+
+.toggle-input:checked + .toggle-label {
+    box-shadow: 0 0 8px rgba(52, 199, 89, 0.5);
+}

@@ -1,0 +1,140 @@
+/* ================================================================
+   RESPONSIVE.CSS - Media queries для разных размеров экранов
+   ================================================================ */
+
+/* Планшеты (768px - 1024px) */
+@media (max-width: 1024px) {
+    .inventory-grid {
+        grid-template-columns: repeat(5, 1fr);
+        min-height: 320px;
+        gap: 8px;
+        padding: 10px;
+    }
+    
+    .inventory-slot .item-icon {
+        font-size: 2.2rem;
+    }
+    
+    .inventory-slot .item-name {
+        font-size: 0.65rem;
+    }
+    
+    .tooltip {
+        min-width: 220px;
+        max-width: 280px;
+        padding: 12px 14px;
+    }
+    
+    .tooltip-stats {
+        font-size: 0.8rem;
+    }
+}
+
+/* Большие телефоны (480px - 768px) */
+@media (max-width: 768px) {
+    .inventory-grid {
+        grid-template-columns: repeat(4, 1fr);
+        min-height: 300px;
+        gap: 6px;
+        padding: 8px;
+    }
+    
+    .inventory-slot {
+        padding: 3px;
+    }
+    
+    .inventory-slot .item-icon {
+        font-size: 1.7rem;
+    }
+    
+    .inventory-slot .item-name {
+        font-size: 0.52rem;
+    }
+    
+    .inventory-drag-preview {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .modal-content {
+        max-height: 90vh;
+    }
+    
+    .tooltip {
+        min-width: 180px;
+        max-width: 240px;
+        padding: 10px 12px;
+    }
+}
+
+/* Средние телефоны (414px - 480px) */
+@media (max-width: 480px) {
+    #app {
+        padding: 86px 0 0 0;
+    }
+    
+    .inventory-grid {
+        grid-template-columns: repeat(3, 1fr);
+        min-height: 280px;
+        gap: 5px;
+        padding: 5px;
+    }
+    
+    .inventory-slot .item-icon {
+        font-size: 1.6rem;
+    }
+    
+    .main-btn {
+        height: 50px;
+        font-size: 0.95rem;
+    }
+    
+    .modal-content {
+        padding: 16px;
+    }
+    
+    .tooltip {
+        min-width: 160px;
+        max-width: 220px;
+        padding: 9px 11px;
+    }
+}
+
+/* Маленькие телефоны (360px - 414px) */
+@media (max-width: 360px) {
+    #app {
+        padding: 80px 0 0 0;
+    }
+    
+    .inventory-grid {
+        grid-template-columns: repeat(2, 1fr);
+        min-height: 260px;
+        gap: 5px;
+        padding: 5px;
+    }
+    
+    .inventory-slot .item-icon {
+        font-size: 1.4rem;
+    }
+    
+    .inventory-slot .item-name {
+        display: none;
+    }
+    
+    .modal-content {
+        width: calc(100% - 12px);
+        padding: 10px;
+    }
+    
+    .main-btn {
+        height: 50px;
+        font-size: 0.95rem;
+    }
+    
+    .tooltip {
+        min-width: 140px;
+        max-width: 180px;
+        padding: 6px 8px;
+        font-size: 0.6rem;
+    }
+}

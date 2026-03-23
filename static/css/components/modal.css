@@ -1,0 +1,82 @@
+/* ================================================================
+   MODAL.CSS - Модальные окна и overlay
+   ================================================================ */
+
+.modal-overlay, .modal {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 8px;
+    backdrop-filter: blur(4px);
+}
+
+.modal-overlay.hidden, .modal.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    background: var(--bg-color);
+    width: calc(100% - 16px);
+    margin: 0 8px;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    touch-action: pan-y;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3, .modal-header h2 {
+    margin: 0;
+}
+
+/* Rarity colors utility */
+.rarity-common { color: var(--rarity-common); }
+.rarity-rare { color: var(--rarity-rare); font-weight: bold; }
+.rarity-epic { color: var(--rarity-epic); font-weight: bold; }
+.rarity-legendary { color: var(--rarity-legendary); font-weight: bold; }
+.rarity-mythic {
+    color: var(--rarity-mythic);
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(255, 45, 85, 0.4);
+}
+
+/* Animation for upgrade success */
+.upgrade-success-anim {
+    animation: upgradeSuccessFlash 0.7s ease;
+}
+
+@keyframes upgradeSuccessFlash {
+    0% { box-shadow: 0 0 0 0 var(--success-color); }
+    20% { box-shadow: 0 0 30px 10px var(--success-color); }
+    50% { box-shadow: 0 0 40px 20px var(--success-color); }
+    80% { box-shadow: 0 0 30px 10px var(--success-color); }
+    100% { box-shadow: 0 0 0 0 var(--success-color); }
+}
+
+/* Animation for upgrade fail */
+.upgrade-fail-anim {
+    animation: upgradeFailShake 0.7s cubic-bezier(.36,.07,.19,.97);
+}
+
+@keyframes upgradeFailShake {
+    0% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
+}

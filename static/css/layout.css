@@ -1,0 +1,143 @@
+/* ================================================================
+   LAYOUT.CSS - Основная структура, flexbox, grid, позиционирование
+   ================================================================ */
+
+#app {
+    padding: max(12px, env(safe-area-inset-top, 12px)) 0 calc(120px + max(0px, env(safe-area-inset-bottom, 0px))) 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+#username {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.balance-container {
+    background: var(--secondary-bg);
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+
+    margin: 0 auto;
+    width: fit-content; 
+}
+
+/* Main content */
+main {
+    margin: 10px 16px;
+    padding: 0;
+}
+
+/* Rod panel */
+.rod-panel {
+    background: var(--secondary-bg);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 20px 0;
+}
+
+.panel-header {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--rarity-common);
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+}
+
+.rod-card {
+    border-left: 4px solid var(--accent-color);
+    padding-left: 12px;
+}
+
+/* Event log */
+.event-log {
+    list-style: none;
+    padding: 10px;
+    margin: 20px 0;
+    flex-grow: 1;
+    height: 40vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+}
+
+.log-item {
+    background: rgba(255, 255, 255, 0.07);
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 1rem;
+    border-left: 3px solid var(--accent-color);
+    animation: logAppear 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.log-item span {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    font-family: monospace;
+}
+
+.log-item.success {
+    border-left-color: var(--success-color);
+}
+
+.log-item.warning {
+    border-left-color: #ff9500;
+    background: rgba(255, 149, 0, 0.1);
+}
+
+.log-item.error {
+    border-left-color: var(--error-color);
+    background: rgba(255, 59, 48, 0.1);
+}
+
+.log-item.rarity-common {
+    border-left-color: var(--rarity-common);
+}
+
+.log-item.rarity-rare {
+    border-left-color: var(--rarity-rare);
+}
+
+.log-item.rarity-epic {
+    border-left-color: var(--rarity-epic);
+}
+
+.log-item.rarity-legendary {
+    border-left-color: var(--rarity-legendary);
+}
+
+.log-item.rarity-mythic {
+    border-left-color: var(--rarity-mythic);
+}
+
+@keyframes logAppear {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

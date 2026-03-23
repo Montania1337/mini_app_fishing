@@ -1,0 +1,63 @@
+/* ================================================================
+   BASE.CSS - Переменные, глобальные стили, CSS Reset
+   ================================================================ */
+
+:root {
+    --bg-color: #1c1c1d;
+    --secondary-bg: #2c2c2e;
+    --text-color: #ffffff;
+    --accent-color: #007aff;
+    --success-color: #34c759;
+    --error-color: #ff3b30;
+    --rarity-common: #8e8e93;
+    --rarity-rare: #32ade6;
+    --rarity-epic: #af52de;
+    --rarity-legendary: #ff9500;
+    --rarity-mythic: #ff2d55;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.4;
+    overflow-x: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--secondary-bg);
+    border-radius: 10px;
+}
+
+/* Visibility utilities */
+.hidden {
+    display: none !important;
+}
+
+/* Make inputs selectable */
+input, textarea, select {
+    user-select: text;
+    -webkit-user-select: text;
+}

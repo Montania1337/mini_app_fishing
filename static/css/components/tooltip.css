@@ -1,0 +1,115 @@
+/* ================================================================
+   TOOLTIP.CSS - Тултипы и всплывающие подсказки
+   ================================================================ */
+
+.tooltip {
+    position: fixed;
+    background: var(--secondary-bg);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 14px 16px;
+    min-width: 240px;
+    max-width: 300px;
+    z-index: 20000;
+    pointer-events: auto;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    animation: tooltipFade 0.15s ease-out;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+@keyframes tooltipFade {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tooltip.hidden {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.tooltip-header {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-name {
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.tooltip-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.tooltip-stat-header {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-stat-item {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    border-radius: 8px;
+    border-left: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Rarity-based borders */
+.tooltip-stats.rarity-common .tooltip-stat-item {
+    border-left-color: var(--rarity-common);
+}
+
+.tooltip-stats.rarity-uncommon .tooltip-stat-item {
+    border-left-color: #5ac8fa;
+}
+
+.tooltip-stats.rarity-rare .tooltip-stat-item {
+    border-left-color: var(--rarity-rare);
+}
+
+.tooltip-stats.rarity-epic .tooltip-stat-item {
+    border-left-color: var(--rarity-epic);
+}
+
+.tooltip-stats.rarity-legendary .tooltip-stat-item {
+    border-left-color: var(--rarity-legendary);
+}
+
+.tooltip-stat-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 3px;
+}
+
+.tooltip-stat-value {
+    color: var(--accent-color);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.tooltip-stat-tier {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 4px;
+}
+
+.tooltip-stat-desc {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.3;
+}

@@ -1,0 +1,313 @@
+/* ================================================================
+   UPGRADE.CSS - Модал апгрейда удочек
+   ================================================================ */
+
+.upgrade-modal-content {
+    max-width: 420px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--bg-color);
+    border-radius: 16px;
+    padding: 20px;
+    display: block;
+    position: relative;
+    box-sizing: border-box;
+    animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.upgrade-modal-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.upgrade-rod-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Level display */
+.upgrade-level-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(0, 122, 255, 0.05) 100%);
+    border-radius: 12px;
+    border: 2px solid rgba(0, 122, 255, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 122, 255, 0.1);
+}
+
+.upgrade-section {
+    flex: 1;
+    text-align: center;
+}
+
+.level-label {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.level-current,
+.level-next {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    text-shadow: 0 0 10px rgba(0, 122, 255, 0.3);
+}
+
+.upgrade-arrow {
+    font-size: 1.8rem;
+    opacity: 0.8;
+    animation: arrowPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes arrowPulse {
+    0%, 100% { transform: translateX(0) scale(1); opacity: 0.8; }
+    50% { transform: translateX(4px) scale(1.1); opacity: 1; }
+}
+
+/* Damage section */
+.upgrade-damage-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 107, 107, 0.05) 100%);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 107, 107, 0.4);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.1);
+}
+
+.damage-change-label {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.damage-display-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.damage-current,
+.damage-next {
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.damage-current {
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.damage-next {
+    color: #34c759;
+    border: 1px solid rgba(52, 199, 89, 0.4);
+    background: rgba(52, 199, 89, 0.1);
+    box-shadow: 0 0 8px rgba(52, 199, 89, 0.2);
+}
+
+.damage-arrow {
+    font-size: 1.3rem;
+    opacity: 0.8;
+    animation: arrowPulse 1.5s ease-in-out infinite;
+}
+
+/* Info box */
+.upgrade-info-box {
+    padding: 16px;
+    background: var(--secondary-bg);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    opacity: 0.8;
+    font-weight: 500;
+}
+
+.info-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent-color);
+}
+
+.info-value.success {
+    color: #34c759;
+}
+
+.info-value.warning {
+    color: #ff9500;
+}
+
+/* Result */
+.upgrade-result {
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    animation: resultPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upgrade-result.success {
+    background: linear-gradient(135deg, rgba(52, 199, 89, 0.2) 0%, rgba(52, 199, 89, 0.05) 100%);
+    border: 2px solid #34c759;
+    box-shadow: 0 0 20px rgba(52, 199, 89, 0.3);
+}
+
+.upgrade-result.failure {
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.2) 0%, rgba(255, 59, 48, 0.05) 100%);
+    border: 2px solid #ff3b30;
+    box-shadow: 0 0 20px rgba(255, 59, 48, 0.3);
+}
+
+.result-text {
+    font-weight: 700;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.upgrade-result.success .result-text {
+    color: #34c759;
+    animation: successGlow 0.6s ease-out;
+}
+
+.upgrade-result.failure .result-text {
+    color: #ff3b30;
+    animation: failureShake 0.5s ease-out;
+}
+
+@keyframes successGlow {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes failureShake {
+    0%, 100% { transform: translateX(0) rotateZ(0deg); }
+    10% { transform: translateX(-8px) rotateZ(-2deg); }
+    20% { transform: translateX(8px) rotateZ(2deg); }
+    30% { transform: translateX(-8px) rotateZ(-2deg); }
+    40% { transform: translateX(8px) rotateZ(2deg); }
+    50% { transform: translateX(-4px) rotateZ(-1deg); }
+    60% { transform: translateX(4px) rotateZ(1deg); }
+    70% { transform: translateX(-2px) rotateZ(-0.5deg); }
+    80% { transform: translateX(2px) rotateZ(0.5deg); }
+}
+
+/* Upgrade button */
+.upgrade-btn {
+    margin-top: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+    border: none;
+    color: white;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+}
+
+.upgrade-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.upgrade-btn:not(:disabled):active {
+    transform: scale(0.98);
+}
+
+.upgrade-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.upgrade-btn.upgrading {
+    animation: upgradeButtonPulse 0.6s ease-in-out;
+}
+
+@keyframes upgradeButtonPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3); }
+    50% { transform: scale(1.02); box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5); }
+}
+
+@keyframes resultPop {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

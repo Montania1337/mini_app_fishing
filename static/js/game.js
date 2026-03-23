@@ -6,6 +6,9 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
+tg.disableVerticalSwipes();
+tg.enableClosingConfirmation()
+
 // Пользователь Telegram
 window.user = tg.initDataUnsafe?.user || { id: 1, first_name: "Test User" };
 
