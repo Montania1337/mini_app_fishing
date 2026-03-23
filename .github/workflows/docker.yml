@@ -1,0 +1,64 @@
+name: docker
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare env variables
+        id: env
+        run: |
+          # short commit hash
+          export sha=$(git show -s --format='%h')
+          echo "sha=$sha" >> $GITHUB_OUTPUT
+          # lowercased image name
+          export image=$(echo $IMAGE_NAME | awk '{print tolower($0)}')
+          echo "image=$image" >> $GITHUB_OUTPUT
+
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker Metadata action
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.env.outputs.image }}
+          flavor: latest=${{ github.ref == 'refs/heads/main' }}
+          tags: |
+            type=sha,prefix=,suffix=,format=short
+            type=ref,event=branch,enabled=${{ github.ref != 'refs/heads/main' }}
+            type=ref,event=tag
+
+      - name: Build and push Docker images
+        id: build_and_push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Image digest
+        run: echo ${{ steps.build_and_push.outputs.digest }}
