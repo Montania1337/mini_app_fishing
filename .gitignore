@@ -1,1 +1,52 @@
-fishing.db
+# Python
+*.pyc
+*~
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.env.*
+!.env.example
+!.env.test
+
+# SQLite
+*.db
+*.sqlite3
+*.sqlite3-journal
+
+# Logs
+logs/
+*.log
+
+# Editor directories and files
+.vscode/*
+.history/
+*.code-workspace
+.idea/
+*.iws
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# macOS
+._*
+.DS_Store
+.fseventsd
+.Spotlight-V100
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Windows
+Thumbs.db*
+ehthumbs*.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
