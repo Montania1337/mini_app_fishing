@@ -2,10 +2,14 @@ import sqlite3
 import json
 from typing import Optional, List, Dict
 
-DB_PATH = 'fishing.db'
+from .config import DATABASE_DIR
+
+DATABASE_DIR.mkdir(exist_ok=True)
+DATABASE_FILE_PATH = DATABASE_DIR / 'fishing.db'
+
 
 def get_connection():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DATABASE_FILE_PATH)
     conn.row_factory = sqlite3.Row  # row['id']
     return conn
 

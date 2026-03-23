@@ -1,3 +1,8 @@
+import pathlib
+
+ROOT_DIR = pathlib.Path(__file__).parent.parent
+DATABASE_DIR = ROOT_DIR / '.database'
+
 # app/config.py
 #  uvicorn main:app  --port 5000
 # Настройки экономики
