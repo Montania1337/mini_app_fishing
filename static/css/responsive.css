@@ -69,10 +69,7 @@
 
 /* Средние телефоны (414px - 480px) */
 @media (max-width: 480px) {
-    #app {
-        padding: 86px 0 0 0;
-    }
-    
+
     .inventory-grid {
         grid-template-columns: repeat(3, 1fr);
         min-height: 280px;
@@ -102,9 +99,7 @@
 
 /* Маленькие телефоны (360px - 414px) */
 @media (max-width: 360px) {
-    #app {
-        padding: 80px 0 0 0;
-    }
+
     
     .inventory-grid {
         grid-template-columns: repeat(2, 1fr);

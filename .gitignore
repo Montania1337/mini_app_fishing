@@ -50,3 +50,4 @@ Thumbs.db*
 ehthumbs*.db
 [Dd]esktop.ini
 $RECYCLE.BIN/
+app/__pycache__/services.cpython-310.pyc

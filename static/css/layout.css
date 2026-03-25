@@ -3,7 +3,7 @@
    ================================================================ */
 
 #app {
-    padding: max(12px, env(safe-area-inset-top, 12px)) 0 calc(120px + max(0px, env(safe-area-inset-bottom, 0px))) 0;
+    padding: max(25px, env(safe-area-inset-top, 12px)) 0 calc(120px + max(0px, env(safe-area-inset-bottom, 0px))) 0;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
