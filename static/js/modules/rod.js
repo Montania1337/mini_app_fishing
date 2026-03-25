@@ -103,13 +103,9 @@ const RodManager = {
             <div style="font-size: 0.9em; margin-top: 8px; font-weight: 600; color: #ff6b6b;">
                 💥 Урон: <b>${damageRange}</b>
             </div>
-            <div style="font-size: 0.85em; margin-top: 4px; color: rgba(255,255,255,0.7);">
-                Редкость: <b>${rod.rarity}</b> | Свойств: <b>${Object.keys(properties).length}/5</b>
-            </div>
             <div style="font-size: 0.85em; margin-top: 6px; color: ${durabilityColor}; font-weight: 600;">
                 💪 Прочность: <b>${durabilityText}</b>
             </div>
-            ${propertiesHTML}
         `;
 
         rodInfoElement.className = `rod-card rarity-${rod.rarity}`;

@@ -5,7 +5,7 @@
 /* Планшеты (768px - 1024px) */
 @media (max-width: 1024px) {
     .inventory-grid {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         min-height: 320px;
         gap: 8px;
         padding: 10px;
@@ -33,7 +33,7 @@
 /* Большие телефоны (480px - 768px) */
 @media (max-width: 768px) {
     .inventory-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         min-height: 300px;
         gap: 6px;
         padding: 8px;
@@ -71,8 +71,8 @@
 @media (max-width: 480px) {
 
     .inventory-grid {
-        grid-template-columns: repeat(3, 1fr);
-        min-height: 280px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        min-height: 150px;
         gap: 5px;
         padding: 5px;
     }
@@ -82,7 +82,7 @@
     }
     
     .main-btn {
-        height: 50px;
+        height: 65px;
         font-size: 0.95rem;
     }
     
@@ -122,7 +122,7 @@
     }
     
     .main-btn {
-        height: 50px;
+        height: 65px;
         font-size: 0.95rem;
     }
     
