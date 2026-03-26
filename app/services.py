@@ -1,6 +1,6 @@
 import random
 import json
-from app.config import FISHES, RARITIES, ROD_PROPERTIES, ACHIEVEMENT_RULES, ROD_NAMES, FISH_PREFIXES, FISH_SUFFIXES, ACHIEVEMENTS_LIST
+from app.config import FISHES, RARITIES, ROD_PROPERTIES, FISHING_ROD_BASES, FISHING_ROD_BASES_WEIGHTS, ACHIEVEMENT_RULES, ROD_NAMES, FISH_PREFIXES, FISH_SUFFIXES, ACHIEVEMENTS_LIST
 from app import database
 
 def weighted_choice(items):
@@ -53,33 +53,43 @@ def generate_random_rod():
         gear_score += gs_value
 
     avg_weight = total_rarity_weight / len(selected_props)
-    
-    if avg_weight > 700:
-        rarity = "common"
-        durability = random.randint(50, 150)
-        # Базовый урон для Common: 1-3
-        min_damage = 1
-        max_damage = 3
-    elif avg_weight > 500:
-        rarity = "uncommon"
-        durability = random.randint(150, 300)
-        min_damage = 2
-        max_damage = 5
-    elif avg_weight > 300:
-        rarity = "rare"
-        durability = random.randint(300, 600)
-        min_damage = 3
-        max_damage = 7
-    elif avg_weight > 100:
-        rarity = "epic"
-        durability = random.randint(600, 1000)
-        min_damage = 4
-        max_damage = 10
-    else:
-        rarity = "legendary"
-        durability = random.randint(1000, 2000)
-        min_damage = 5
-        max_damage = 15
+
+    # База генерируется отдельно от свойств, просто по весу.
+    rods_weights = FISHING_ROD_BASES_WEIGHTS
+    fish_rod_base = random.choices(range(1, 6), weights=rods_weights)[0]
+
+    rarity = FISHING_ROD_BASES[fish_rod_base]["rarity"]
+    durability_range = FISHING_ROD_BASES[fish_rod_base]["durabillity"]
+    durability = random.randrange(durability_range[0], durability_range[1])
+    min_damage = FISHING_ROD_BASES[fish_rod_base]["damage"][0]
+    max_damage = FISHING_ROD_BASES[fish_rod_base]["damage"][1]
+
+    # if avg_weight > 700:
+    #     rarity = "common"
+    #     durability = random.randint(50, 150)
+    #     # Базовый урон для Common: 1-3
+    #     min_damage = 1
+    #     max_damage = 3
+    # elif avg_weight > 500:
+    #     rarity = "uncommon"
+    #     durability = random.randint(150, 300)
+    #     min_damage = 2
+    #     max_damage = 5
+    # elif avg_weight > 300:
+    #     rarity = "rare"
+    #     durability = random.randint(300, 600)
+    #     min_damage = 3
+    #     max_damage = 7
+    # elif avg_weight > 100:
+    #     rarity = "epic"
+    #     durability = random.randint(600, 1000)
+    #     min_damage = 4
+    #     max_damage = 10
+    # else:
+    #     rarity = "legendary"
+    #     durability = random.randint(1000, 2000)
+    #     min_damage = 5
+    #     max_damage = 15
     
     rod_name = random.choice(ROD_NAMES)
     
@@ -92,6 +102,16 @@ def generate_random_rod():
         "max_damage": max_damage,
         "gear_score": gear_score
     }
+
+    # return {
+    #     "name": "Удочка тысячи истин",
+    #     "rarity": "legendary",
+    #     "properties": properties,
+    #     "durability": 9999999999,
+    #     "min_damage": 50,
+    #     "max_damage": 150,
+    #     "gear_score": 9999
+    # }
 
 
 
@@ -131,6 +151,7 @@ def catch_fish_logic(rod: dict):
         tier = properties['crit']
         crit_chance = ROD_PROPERTIES['crit']['tiers'][tier]['value']
     
+    # MARK: мы думали что это слои рандома, но мы поняли что тут происходит и это "немножко странно" (с) Миша
     pool = []
     for fish in FISHES:
         rarity_data = RARITIES[fish["rarity"]]
@@ -290,6 +311,9 @@ def calculate_strike_damage(rod: dict):
         min_damage = rod.get('min_damage', 1)
         max_damage = rod.get('max_damage', 3)
         
+        print(rod)
+        print(min_damage, max_damage)
+
         damage_range = range(min_damage, max_damage + 1)
         weights = []
         for i, dmg in enumerate(damage_range):
@@ -298,7 +322,8 @@ def calculate_strike_damage(rod: dict):
             weights.append(max(1, weight))  # Минимум 1 чтобы не было 0
         
         base_damage = random.choices(list(damage_range), weights=weights)[0]
-        
+
+        # MARK: КАКОВА ХУЙЯ Множитель награды влияет на урон
         reward_mult = 1.0
         if 'reward' in properties:
             try:
@@ -308,16 +333,22 @@ def calculate_strike_damage(rod: dict):
             except (ValueError, KeyError, TypeError) as e:
                 print(f"Ошибка при обработке reward в damage: {e}")
         
-        crit_bonus = 0
+        # MARK: КАКОВА ХУЙЯ крит вообще так нахуй работает что это блять
+        crit_bonus = 1
         if 'crit' in properties:
             try:
                 tier = int(properties['crit'])
                 tier_data = ROD_PROPERTIES['crit']['tiers'].get(tier, {})
                 crit_chance = tier_data.get('value', 0.0)
                 if random.random() < crit_chance:
-                    crit_bonus = random.randint(1, 3) 
+                    # crit_bonus = random.randint(1, 3) 
+                    crit_bonus = 1.5
+                    # MARK: МОЖНО ДОБАВИТЬ СВОЙСТВА УСИЛЕНИЯ КРИТА 
+                    # ИЛИ ПРОСТО БРАТЬ КРИТ МУЛЬТИ ОТ ТИРА ТОЖЕ, 
+                    # НО БУДЕТ ДАБЛ ДИП И БУДЕТ УЖЕ ПИЗДЕЦ МОЩНОЕ СВОЙСТВ
             except (ValueError, KeyError, TypeError) as e:
                 print(f"Ошибка при обработке crit в damage: {e}")
+        
         
         power_mult = 1.0
         if 'power' in properties:
@@ -328,8 +359,9 @@ def calculate_strike_damage(rod: dict):
             except (ValueError, KeyError, TypeError) as e:
                 print(f"Ошибка при обработке power в damage: {e}")
         
-        damage = int(base_damage * reward_mult * power_mult) + crit_bonus
-        
+        # damage = int(base_damage * reward_mult * power_mult) + crit_bonus
+        damage = int(base_damage * power_mult * crit_bonus)
+        print(damage)
         return max(1, damage)
     except Exception as e:
         print(f"Ошибка в calculate_strike_damage: {e}")
