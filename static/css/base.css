@@ -14,6 +14,8 @@
     --rarity-epic: #af52de;
     --rarity-legendary: #ff9500;
     --rarity-mythic: #ff2d55;
+    --app-safe-top: max(0px, var(--tg-content-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px));
+    --app-safe-bottom: max(0px, var(--tg-content-safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px));
 }
 
 * {

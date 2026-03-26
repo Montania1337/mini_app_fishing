@@ -77,6 +77,22 @@ const API = {
         return this.request('leaderboard');
     },
 
+    getAuctionListings() {
+        return this.request('auction/listings');
+    },
+
+    sellRodAtAuction(rodId, price) {
+        return this.request('auction/sell', { rod_id: rodId, price });
+    },
+
+    cancelAuctionListing(listingId) {
+        return this.request('auction/cancel', { listing_id: listingId });
+    },
+
+    buyAuctionListing(listingId) {
+        return this.request('auction/buy', { listing_id: listingId });
+    },
+
     async getConstants() {
         try {
             const res = await fetch('/api/constants', {

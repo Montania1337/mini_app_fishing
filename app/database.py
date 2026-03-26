@@ -11,6 +11,7 @@ DATABASE_FILE_PATH = DATABASE_DIR / 'fishing.db'
 def get_connection():
     conn = sqlite3.connect(DATABASE_FILE_PATH)
     conn.row_factory = sqlite3.Row  # row['id']
+    conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 def init_db():
@@ -55,6 +56,20 @@ def init_db():
                 PRIMARY KEY (user_id, achievement_key)
             )
         ''')
+
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS auction_listings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                rod_id INTEGER NOT NULL UNIQUE,
+                seller_id INTEGER NOT NULL,
+                seller_name TEXT NOT NULL,
+                price INTEGER NOT NULL,
+                is_active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(rod_id) REFERENCES rods(id) ON DELETE CASCADE,
+                FOREIGN KEY(seller_id) REFERENCES players(user_id) ON DELETE CASCADE
+            )
+        ''')
         
         # МИГРАЦИЯ: Если база уже была, добавим колонки вручную
         try:
@@ -75,6 +90,18 @@ def init_db():
         try:
             conn.execute("ALTER TABLE rods ADD COLUMN max_damage INTEGER DEFAULT 3")
         except: pass
+        try:
+            conn.execute("ALTER TABLE rods ADD COLUMN gear_score INTEGER DEFAULT 0")
+        except: pass
+        try:
+            conn.execute("ALTER TABLE rods ADD COLUMN upgrade_level INTEGER DEFAULT 0")
+        except: pass
+        try:
+            conn.execute("ALTER TABLE auction_listings ADD COLUMN is_active INTEGER DEFAULT 1")
+        except: pass
+        try:
+            conn.execute("ALTER TABLE auction_listings ADD COLUMN seller_name TEXT DEFAULT 'Рыбак'")
+        except: pass
         conn.commit()
 
     print("База данных успешно инициализирована")
@@ -85,6 +112,8 @@ def get_player(user_id: int, username: str) -> Dict:
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("INSERT OR IGNORE INTO players (user_id, username, balance, max_catch, total_caught) VALUES (?, ?, 0, 0, 0)", (user_id, username))
+        if username:
+            cursor.execute("UPDATE players SET username = ? WHERE user_id = ?", (username, user_id))
         conn.commit()
         cursor.execute("SELECT * FROM players WHERE user_id = ?", (user_id,))
         row = cursor.fetchone()
@@ -125,16 +154,19 @@ def get_player_stats(user_id: int):
 
 # --- ФУНКЦИИ УДОЧЕК ---
 
+def _get_next_rod_position(cursor, user_id: int) -> int:
+    cursor.execute("SELECT MAX(COALESCE(position, -1)) FROM rods WHERE user_id = ?", (user_id,))
+    max_pos = cursor.fetchone()[0]
+    if max_pos is None:
+        max_pos = -1
+    return max_pos + 1
+
+
 def add_rod(user_id: int, rod_data: Dict) -> int:
     with get_connection() as conn:
         cursor = conn.cursor()
-        
-        # Get the next position
-        cursor.execute("SELECT MAX(COALESCE(position, -1)) FROM rods WHERE user_id = ?", (user_id,))
-        max_pos = cursor.fetchone()[0]
-        if max_pos is None:
-            max_pos = -1
-        next_position = max_pos + 1
+
+        next_position = _get_next_rod_position(cursor, user_id)
         
         properties_json = json.dumps(rod_data.get('properties', {}))
         durability = rod_data.get('durability', 100)  # Default 100 casts
@@ -153,7 +185,14 @@ def add_rod(user_id: int, rod_data: Dict) -> int:
 def get_user_rods(user_id: int) -> List[Dict]:
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM rods WHERE user_id = ? ORDER BY COALESCE(position, id)", (user_id,))
+        cursor.execute('''
+            SELECT r.*
+            FROM rods r
+            LEFT JOIN auction_listings al
+                ON al.rod_id = r.id AND al.is_active = 1
+            WHERE r.user_id = ? AND al.id IS NULL
+            ORDER BY COALESCE(r.position, r.id)
+        ''', (user_id,))
         rods = []
         for row in cursor.fetchall():
             rod = dict(row)
@@ -180,7 +219,13 @@ def get_user_rods(user_id: int) -> List[Dict]:
 def get_active_rod(user_id: int) -> Optional[Dict]:
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM rods WHERE user_id = ? AND is_active = 1", (user_id,))
+        cursor.execute('''
+            SELECT r.*
+            FROM rods r
+            LEFT JOIN auction_listings al
+                ON al.rod_id = r.id AND al.is_active = 1
+            WHERE r.user_id = ? AND r.is_active = 1 AND al.id IS NULL
+        ''', (user_id,))
         row = cursor.fetchone()
         if not row:
             return None
@@ -201,7 +246,14 @@ def get_active_rod(user_id: int) -> Optional[Dict]:
 def set_active_rod_db(user_id: int, rod_id: int):
     with get_connection() as conn:
         conn.execute("UPDATE rods SET is_active = 0 WHERE user_id = ?", (user_id,))
-        conn.execute("UPDATE rods SET is_active = 1 WHERE user_id = ? AND id = ?", (user_id, rod_id))
+        conn.execute('''
+            UPDATE rods
+            SET is_active = 1
+            WHERE user_id = ? AND id = ?
+              AND id NOT IN (
+                  SELECT rod_id FROM auction_listings WHERE is_active = 1
+              )
+        ''', (user_id, rod_id))
         conn.commit()
 
 def reduce_durability(rod_id: int):
@@ -260,6 +312,184 @@ def update_rod_upgrade(rod_id: int, new_level: int, damage_bonus: int):
             conn.commit()
 
 # --- ДОСТИЖЕНИЯ ---
+
+def get_auction_listings() -> List[Dict]:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT
+                al.id,
+                al.rod_id,
+                al.seller_id,
+                al.seller_name,
+                al.price,
+                al.created_at,
+                r.name,
+                r.rarity,
+                r.properties,
+                r.durability,
+                r.min_damage,
+                r.max_damage,
+                r.gear_score,
+                r.upgrade_level
+            FROM auction_listings al
+            JOIN rods r ON r.id = al.rod_id
+            WHERE al.is_active = 1
+            ORDER BY al.created_at DESC, al.id DESC
+        ''')
+        return [dict(row) for row in cursor.fetchall()]
+
+
+def get_user_auction_listings(user_id: int) -> List[Dict]:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT
+                al.id,
+                al.rod_id,
+                al.seller_id,
+                al.seller_name,
+                al.price,
+                al.created_at,
+                r.name,
+                r.rarity,
+                r.properties,
+                r.durability,
+                r.min_damage,
+                r.max_damage,
+                r.gear_score,
+                r.upgrade_level
+            FROM auction_listings al
+            JOIN rods r ON r.id = al.rod_id
+            WHERE al.is_active = 1 AND al.seller_id = ?
+            ORDER BY al.created_at DESC, al.id DESC
+        ''', (user_id,))
+        return [dict(row) for row in cursor.fetchall()]
+
+
+def create_auction_listing(user_id: int, rod_id: int, price: int, seller_name: str) -> Dict:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM rods WHERE id = ? AND user_id = ?", (rod_id, user_id))
+        rod = cursor.fetchone()
+        if not rod:
+            raise ValueError("Удочка не найдена")
+
+        rod = dict(rod)
+        if rod.get('is_active'):
+            raise ValueError("Нельзя выставить активную удочку")
+        if price <= 0:
+            raise ValueError("Цена должна быть больше 0")
+
+        cursor.execute("SELECT id FROM auction_listings WHERE rod_id = ? AND is_active = 1", (rod_id,))
+        if cursor.fetchone():
+            raise ValueError("Эта удочка уже выставлена на аукцион")
+
+        cursor.execute('''
+            INSERT INTO auction_listings (rod_id, seller_id, seller_name, price, is_active)
+            VALUES (?, ?, ?, ?, 1)
+            ON CONFLICT(rod_id) DO UPDATE SET
+                seller_id = excluded.seller_id,
+                seller_name = excluded.seller_name,
+                price = excluded.price,
+                is_active = 1,
+                created_at = CURRENT_TIMESTAMP
+        ''', (rod_id, user_id, seller_name or "Рыбак", price))
+        cursor.execute("SELECT id FROM auction_listings WHERE rod_id = ?", (rod_id,))
+        listing_id = cursor.fetchone()[0]
+        conn.commit()
+
+        return {
+            "listing_id": listing_id,
+            "rod_id": rod_id,
+            "price": price
+        }
+
+
+def cancel_auction_listing(user_id: int, listing_id: int) -> bool:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE auction_listings
+            SET is_active = 0
+            WHERE id = ? AND seller_id = ? AND is_active = 1
+        ''', (listing_id, user_id))
+        conn.commit()
+        return cursor.rowcount > 0
+
+
+def buy_auction_listing(buyer_id: int, listing_id: int, inventory_limit: int) -> Dict:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("BEGIN IMMEDIATE")
+
+        cursor.execute('''
+            SELECT
+                al.id,
+                al.rod_id,
+                al.seller_id,
+                al.seller_name,
+                al.price,
+                r.name AS rod_name
+            FROM auction_listings al
+            JOIN rods r ON r.id = al.rod_id
+            WHERE al.id = ? AND al.is_active = 1
+        ''', (listing_id,))
+        listing = cursor.fetchone()
+        if not listing:
+            raise ValueError("Лот уже куплен или не найден")
+
+        listing = dict(listing)
+        if listing["seller_id"] == buyer_id:
+            raise ValueError("Нельзя купить свой лот")
+
+        cursor.execute("SELECT balance FROM players WHERE user_id = ?", (buyer_id,))
+        buyer = cursor.fetchone()
+        buyer_balance = buyer["balance"] if buyer else 0
+        if buyer_balance < listing["price"]:
+            raise ValueError("Недостаточно монет")
+
+        cursor.execute('''
+            SELECT COUNT(*)
+            FROM rods r
+            LEFT JOIN auction_listings al
+                ON al.rod_id = r.id AND al.is_active = 1
+            WHERE r.user_id = ? AND al.id IS NULL
+        ''', (buyer_id,))
+        visible_rods_count = cursor.fetchone()[0]
+        if visible_rods_count >= inventory_limit:
+            raise ValueError("Инвентарь покупателя заполнен")
+
+        next_position = _get_next_rod_position(cursor, buyer_id)
+
+        cursor.execute(
+            "UPDATE players SET balance = balance - ? WHERE user_id = ?",
+            (listing["price"], buyer_id)
+        )
+        cursor.execute(
+            "UPDATE players SET balance = balance + ? WHERE user_id = ?",
+            (listing["price"], listing["seller_id"])
+        )
+        cursor.execute('''
+            UPDATE rods
+            SET user_id = ?, is_active = 0, position = ?
+            WHERE id = ?
+        ''', (buyer_id, next_position, listing["rod_id"]))
+        cursor.execute(
+            "UPDATE auction_listings SET is_active = 0 WHERE id = ?",
+            (listing_id,)
+        )
+        cursor.execute("SELECT balance FROM players WHERE user_id = ?", (buyer_id,))
+        new_balance = cursor.fetchone()[0]
+        conn.commit()
+
+        return {
+            "balance": new_balance,
+            "price": listing["price"],
+            "rod_name": listing["rod_name"],
+            "seller_name": listing["seller_name"]
+        }
+
 
 def unlock_achievement_db(user_id, ach_key):
     with get_connection() as conn:

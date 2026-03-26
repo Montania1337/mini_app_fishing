@@ -137,6 +137,9 @@ const TooltipManager = {
             <div class="context-menu-item" data-action="upgrade">
                 ⬆️ Улучшить
             </div>
+            <div class="context-menu-item" data-action="auction">
+                На аукцион
+            </div>
             <div class="context-menu-item" data-action="equip">
                 ✅ Надеть
             </div>

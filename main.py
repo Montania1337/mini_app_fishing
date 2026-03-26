@@ -227,6 +227,91 @@ async def delete_rod(payload: dict):
     database.delete_rod_db(user_id, rod_id)
     return {"success": True}
 
+
+@app.post("/api/auction/listings")
+async def get_auction_listings(payload: dict):
+    user_id = payload.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="РќРµ СѓРєР°Р·Р°РЅ user_id")
+
+    return {
+        "listings": database.get_auction_listings(),
+        "my_listings": database.get_user_auction_listings(user_id)
+    }
+
+
+@app.post("/api/auction/sell")
+async def create_auction_listing(payload: dict):
+    try:
+        user_id = payload.get("id")
+        first_name = payload.get("first_name", "Рыбак")
+        rod_id = payload.get("rod_id")
+        price = int(payload.get("price", 0))
+
+        if not user_id or not rod_id:
+            raise HTTPException(status_code=400, detail="РќРµ СѓРєР°Р·Р°РЅС‹ id РёР»Рё rod_id")
+
+        player = database.get_player(user_id, first_name)
+        result = database.create_auction_listing(
+            user_id=user_id,
+            rod_id=rod_id,
+            price=price,
+            seller_name=player.get("username") or first_name or "Рыбак"
+        )
+        return {"success": True, **result}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Ошибка в /api/auction/sell: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/auction/cancel")
+async def cancel_auction_listing(payload: dict):
+    try:
+        user_id = payload.get("id")
+        listing_id = payload.get("listing_id")
+        if not user_id or not listing_id:
+            raise HTTPException(status_code=400, detail="РќРµ СѓРєР°Р·Р°РЅС‹ id РёР»Рё listing_id")
+
+        success = database.cancel_auction_listing(user_id, listing_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Лот не найден или уже снят")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Ошибка в /api/auction/cancel: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/auction/buy")
+async def buy_auction_listing(payload: dict):
+    try:
+        user_id = payload.get("id")
+        listing_id = payload.get("listing_id")
+        if not user_id or not listing_id:
+            raise HTTPException(status_code=400, detail="РќРµ СѓРєР°Р·Р°РЅС‹ id РёР»Рё listing_id")
+
+        result = database.buy_auction_listing(
+            buyer_id=user_id,
+            listing_id=listing_id,
+            inventory_limit=config.INVENTORY_SIZE
+        )
+        return {"success": True, **result}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Ошибка в /api/auction/buy: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/upgrade-rod")
 async def upgrade_rod(payload: dict):
     try:

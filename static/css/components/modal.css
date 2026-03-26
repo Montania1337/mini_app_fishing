@@ -4,7 +4,7 @@
 
 .modal-overlay, .modal {
     position: fixed;
-    top: 70px;
+    top: max(70px, calc(var(--app-safe-top) + 16px));
     left: 0;
     right: 0;
     bottom: 0;

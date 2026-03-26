@@ -12,10 +12,12 @@
     <link rel="stylesheet" href="/static/css/components/modal.css">
     <link rel="stylesheet" href="/static/css/components/toast.css">
     <link rel="stylesheet" href="/static/css/components/inventory.css">
+    <link rel="stylesheet" href="/static/css/components/auction.css">
     <link rel="stylesheet" href="/static/css/components/combat.css">
     <link rel="stylesheet" href="/static/css/components/tooltip.css">
     <link rel="stylesheet" href="/static/css/components/context-menu.css">
     <link rel="stylesheet" href="/static/css/components/bottom-sheet.css">
+    <link rel="stylesheet" href="/static/css/components/sidebar.css">
     <link rel="stylesheet" href="/static/css/components/upgrade.css">
     <link rel="stylesheet" href="/static/css/components/settings.css">
     <!-- CSS: Responsive -->
@@ -82,9 +84,32 @@
 
 <div class="menu-grid">
     <button id="inventory-btn" class="secondary-btn">🎒 Инвентарь</button>
-    <button id="achievements-btn" class="secondary-btn">🏆 Достижения</button>
     <button id="settings-btn" class="secondary-btn">⚙️ Настройки</button>
+    <button id="sidebar-toggle" class="secondary-btn">☰ Меню</button>
 </div>
+
+<div id="sidebar-backdrop" class="sidebar-backdrop hidden"></div>
+
+<aside id="side-menu" class="side-menu hidden" aria-hidden="true">
+    <div class="side-menu-header">
+        <div>
+            <div class="side-menu-kicker">Навигация</div>
+            <div class="side-menu-title">Игровые разделы</div>
+        </div>
+        <button id="close-side-menu" class="close-btn">✖</button>
+    </div>
+
+    <div class="side-menu-nav">
+        <button id="auction-btn" class="side-menu-btn">🎣 Аукцион</button>
+        <button id="achievements-btn" class="side-menu-btn">🏆 Достижения</button>
+        <button id="leaderboard-btn" class="side-menu-btn">📊 Таблица лидеров</button>
+    </div>
+
+    <div class="side-menu-footer">
+        <div class="side-menu-version-label">Версия рыбалки</div>
+        <div id="side-menu-version" class="side-menu-version">v0.1.1</div>
+    </div>
+</aside>
 
 <div id="achievements-modal" class="modal-overlay hidden">
     <div class="modal-content">
@@ -144,6 +169,54 @@
 </div>
 
 <!-- Tooltip для характеристик удочки -->
+<div id="auction-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Аукцион удочек</h3>
+            <button id="close-auction-modal">✖</button>
+        </div>
+
+        <div class="auction-layout">
+            <section class="auction-section">
+                <h4>Выставить удочку</h4>
+                <div id="auction-selected-rod" class="auction-selected-grid"></div>
+                <div class="auction-sell-controls">
+                    <input id="auction-price-input" class="auction-price-input" type="number" min="1" placeholder="Цена в монетах">
+                    <button id="auction-submit-btn" class="main-btn">Выставить</button>
+                </div>
+            </section>
+
+            <section class="auction-section">
+                <h4>Лоты игроков</h4>
+                <div id="auction-listings" class="auction-grid"></div>
+            </section>
+
+            <section class="auction-section">
+                <h4>Мои лоты</h4>
+                <div id="auction-my-listings" class="auction-grid"></div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div id="auction-bottom-sheet" class="bottom-sheet hidden">
+    <div class="bottom-sheet-content">
+        <div class="bottom-sheet-header">
+            <h3 id="auction-bottom-sheet-title">Лот</h3>
+            <button id="close-auction-bottom-sheet" class="btn-close">✖</button>
+        </div>
+
+        <div class="bottom-sheet-body">
+            <div id="auction-bottom-sheet-meta" class="auction-bottom-sheet-meta"></div>
+            <div id="auction-bottom-sheet-stats" class="bottom-sheet-stats"></div>
+        </div>
+
+        <div class="bottom-sheet-actions">
+            <button id="auction-bottom-sheet-action" class="action-btn">Купить</button>
+        </div>
+    </div>
+</div>
+
 <div id="rod-tooltip" class="tooltip hidden">
     <div class="tooltip-header">
         <span class="tooltip-name"></span>
@@ -175,6 +248,7 @@
         </div>
         
         <div class="bottom-sheet-actions">
+            <button class="action-btn" data-action="auction">На аукцион</button>
             <button class="action-btn" data-action="upgrade">⬆️ Улучшить</button>
             <button class="action-btn" data-action="equip">✅ Надеть</button>
             <button class="action-btn danger" data-action="delete">✖️ Удалить</button>
@@ -242,8 +316,6 @@
     </div>
 </div>
 
-<button id="leaderboard-btn" class="btn-circle">🏆</button>
-
 <div id="leaderboard-modal" class="modal hidden">
     <div class="modal-content large">
         <div class="modal-header">
@@ -278,6 +350,7 @@
     <script src="/static/js/modules/combat.js"></script>
     <script src="/static/js/modules/inventory.js"></script>
     <script src="/static/js/modules/upgrade.js"></script>
+    <script src="/static/js/modules/auction.js"></script>
     <script src="/static/js/modules/leaderboard.js"></script>
     <script src="/static/js/modules/achievement.js"></script>
     <script src="/static/js/modules/settings.js"></script>

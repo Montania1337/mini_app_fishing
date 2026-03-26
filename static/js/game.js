@@ -20,6 +20,10 @@ const GameState = {
     rods: []
 };
 
+const APP_META = {
+    version: 'v0.1.1 b'
+};
+
 // DOM элементы
 const UI_ELEMENTS = {
     balance: document.getElementById('balance'),
@@ -29,10 +33,28 @@ const UI_ELEMENTS = {
     fishBtn: document.getElementById('fish-btn'),
     modal: document.getElementById('modal'),
     invBtn: document.getElementById('inventory-btn'),
+    auctionBtn: document.getElementById('auction-btn'),
     closeModal: document.getElementById('close-modal'),
     invGrid: document.getElementById('inventory-grid'),
     buyBtnModal: document.getElementById('buy-btn-modal'),
     priceTag: document.getElementById('price-tag'),
+    sidebarToggle: document.getElementById('sidebar-toggle'),
+    sideMenu: document.getElementById('side-menu'),
+    sideMenuBackdrop: document.getElementById('sidebar-backdrop'),
+    closeSideMenu: document.getElementById('close-side-menu'),
+    sideMenuVersion: document.getElementById('side-menu-version'),
+    auctionModal: document.getElementById('auction-modal'),
+    closeAuctionModal: document.getElementById('close-auction-modal'),
+    auctionSelectedRod: document.getElementById('auction-selected-rod'),
+    auctionPriceInput: document.getElementById('auction-price-input'),
+    auctionSubmitBtn: document.getElementById('auction-submit-btn'),
+    auctionListings: document.getElementById('auction-listings'),
+    auctionMyListings: document.getElementById('auction-my-listings'),
+    auctionBottomSheet: document.getElementById('auction-bottom-sheet'),
+    auctionBottomSheetTitle: document.getElementById('auction-bottom-sheet-title'),
+    auctionBottomSheetMeta: document.getElementById('auction-bottom-sheet-meta'),
+    auctionBottomSheetStats: document.getElementById('auction-bottom-sheet-stats'),
+    auctionBottomSheetAction: document.getElementById('auction-bottom-sheet-action'),
     achBtn: document.getElementById('achievements-btn'),
     achModal: document.getElementById('achievements-modal'),
     achList: document.getElementById('achievements-list'),
@@ -77,6 +99,9 @@ async function initializeGame() {
         // Обновляем UI
         UIManager.setHTML(UI_ELEMENTS.name, window.user.first_name);
         UIManager.updateBalance(GameState.balance);
+        if (UI_ELEMENTS.sideMenuVersion) {
+            UI_ELEMENTS.sideMenuVersion.textContent = APP_META.version;
+        }
         
         // Инициализируем модули
         GameState.activeRod = GameState.rods.find(r => r.is_active);
@@ -110,10 +135,12 @@ async function initializeGame() {
                         TooltipManager.hide();
                         TooltipManager.hideContextMenu();
                         TooltipManager.hideBottomSheet();
+                        AuctionManager.hideOverlays?.();
                     } else {
                         // Режим отключен (нормальный) -> скрываем bottom sheet
                         console.log('[onSettingChanged] Режим меню отключен, скрываем bottom sheet');
                         TooltipManager.hideBottomSheet();
+                        AuctionManager.hideOverlays?.();
                     }
                 }
             };
@@ -294,6 +321,8 @@ TooltipManager.onContextMenuAction = async (action, rod) => {
         } else if (action === 'upgrade') {
             console.log('Calling UpgradeManager.open for:', rod.name);
             UpgradeManager.open(rod);
+        } else if (action === 'auction') {
+            openAuction(rod);
         } else {
             console.log('Unknown action:', action);
         }
@@ -343,6 +372,48 @@ function openSettings() {
     SettingsManager.showModal(UI_ELEMENTS.settingsModal);
 }
 
+function openAuction(selectedRod = null) {
+    AuctionManager.open(selectedRod);
+}
+
+let sideMenuHideTimer = null;
+
+function openSideMenu() {
+    if (!UI_ELEMENTS.sideMenu || !UI_ELEMENTS.sideMenuBackdrop) return;
+
+    clearTimeout(sideMenuHideTimer);
+    UI_ELEMENTS.sideMenu.classList.remove('hidden');
+    UI_ELEMENTS.sideMenuBackdrop.classList.remove('hidden');
+    UI_ELEMENTS.sideMenu.setAttribute('aria-hidden', 'false');
+
+    requestAnimationFrame(() => {
+        UI_ELEMENTS.sideMenu.classList.add('is-open');
+    });
+}
+
+function closeSideMenu() {
+    if (!UI_ELEMENTS.sideMenu || !UI_ELEMENTS.sideMenuBackdrop) return;
+
+    UI_ELEMENTS.sideMenu.classList.remove('is-open');
+    UI_ELEMENTS.sideMenu.setAttribute('aria-hidden', 'true');
+    UI_ELEMENTS.sideMenuBackdrop.classList.add('hidden');
+
+    clearTimeout(sideMenuHideTimer);
+    sideMenuHideTimer = setTimeout(() => {
+        UI_ELEMENTS.sideMenu.classList.add('hidden');
+    }, 220);
+}
+
+function toggleSideMenu() {
+    if (!UI_ELEMENTS.sideMenu) return;
+
+    if (UI_ELEMENTS.sideMenu.classList.contains('hidden')) {
+        openSideMenu();
+    } else {
+        closeSideMenu();
+    }
+}
+
 // ============================================================
 // ЛИДЕРБОРД
 // ============================================================
@@ -386,8 +457,16 @@ function initializeEventHandlers() {
     // Инвентарь
     if (UI_ELEMENTS.invBtn) {
         UI_ELEMENTS.invBtn.onclick = () => {
+            closeSideMenu();
             UIManager.showModal(UI_ELEMENTS.modal);
             refreshInventory();
+        };
+    }
+
+    if (UI_ELEMENTS.auctionBtn) {
+        UI_ELEMENTS.auctionBtn.onclick = () => {
+            closeSideMenu();
+            openAuction();
         };
     }
 
@@ -404,9 +483,24 @@ function initializeEventHandlers() {
         UI_ELEMENTS.buyBtnModal.onclick = buyRod;
     }
 
+    if (UI_ELEMENTS.closeAuctionModal) {
+        UI_ELEMENTS.closeAuctionModal.onclick = () => {
+            AuctionManager.close();
+        };
+    }
+
+    if (UI_ELEMENTS.auctionSubmitBtn) {
+        UI_ELEMENTS.auctionSubmitBtn.onclick = () => {
+            AuctionManager.submitSelectedRod();
+        };
+    }
+
     // Достижения
     if (UI_ELEMENTS.achBtn) {
-        UI_ELEMENTS.achBtn.onclick = openAchievements;
+        UI_ELEMENTS.achBtn.onclick = () => {
+            closeSideMenu();
+            openAchievements();
+        };
     }
 
     if (UI_ELEMENTS.closeAchModal) {
@@ -417,7 +511,10 @@ function initializeEventHandlers() {
 
     // Настройки
     if (UI_ELEMENTS.settingsBtn) {
-        UI_ELEMENTS.settingsBtn.onclick = openSettings;
+        UI_ELEMENTS.settingsBtn.onclick = () => {
+            closeSideMenu();
+            openSettings();
+        };
     }
 
     if (UI_ELEMENTS.closeSettingsModal) {
@@ -428,7 +525,10 @@ function initializeEventHandlers() {
 
     // Лидерборд
     if (UI_ELEMENTS.leadBtn) {
-        UI_ELEMENTS.leadBtn.onclick = openLeaderboard;
+        UI_ELEMENTS.leadBtn.onclick = () => {
+            closeSideMenu();
+            openLeaderboard();
+        };
     }
 
     if (UI_ELEMENTS.closeLead) {
@@ -437,11 +537,36 @@ function initializeEventHandlers() {
         };
     }
 
+    if (UI_ELEMENTS.sidebarToggle) {
+        UI_ELEMENTS.sidebarToggle.onclick = () => {
+            toggleSideMenu();
+        };
+    }
+
+    if (UI_ELEMENTS.closeSideMenu) {
+        UI_ELEMENTS.closeSideMenu.onclick = () => {
+            closeSideMenu();
+        };
+    }
+
+    if (UI_ELEMENTS.sideMenuBackdrop) {
+        UI_ELEMENTS.sideMenuBackdrop.onclick = () => {
+            closeSideMenu();
+        };
+    }
+
     // Bottom Sheet (мобильный режим)
     const closeBottomSheetBtn = document.getElementById('close-bottom-sheet');
     if (closeBottomSheetBtn) {
         closeBottomSheetBtn.onclick = () => {
             TooltipManager.hideBottomSheet();
+        };
+    }
+
+    const closeAuctionBottomSheetBtn = document.getElementById('close-auction-bottom-sheet');
+    if (closeAuctionBottomSheetBtn) {
+        closeAuctionBottomSheetBtn.onclick = () => {
+            AuctionManager.hideBottomSheet();
         };
     }
 
@@ -456,6 +581,15 @@ function initializeEventHandlers() {
         }
         if (UI_ELEMENTS.bottomSheet && !UI_ELEMENTS.bottomSheet.contains(e.target) && !UI_ELEMENTS.bottomSheet.classList.contains('hidden')) {
             TooltipManager.hideBottomSheet();
+        }
+        if (UI_ELEMENTS.auctionBottomSheet && !UI_ELEMENTS.auctionBottomSheet.contains(e.target) && !UI_ELEMENTS.auctionBottomSheet.classList.contains('hidden')) {
+            AuctionManager.hideBottomSheet();
+        }
+        if (UI_ELEMENTS.sideMenu &&
+            !UI_ELEMENTS.sideMenu.classList.contains('hidden') &&
+            !UI_ELEMENTS.sideMenu.contains(e.target) &&
+            e.target !== UI_ELEMENTS.sidebarToggle) {
+            closeSideMenu();
         }
     });
 
@@ -474,6 +608,24 @@ function initializeEventHandlers() {
                 TooltipManager.hide();
             }
         }
+        if (UI_ELEMENTS.auctionBottomSheet && !UI_ELEMENTS.auctionBottomSheet.classList.contains('hidden')) {
+            if (e.target.closest('#auction-bottom-sheet') === null &&
+                e.target.closest('.auction-slot') === null) {
+                AuctionManager.hideBottomSheet();
+            }
+        }
+        if (UI_ELEMENTS.sideMenu &&
+            !UI_ELEMENTS.sideMenu.classList.contains('hidden') &&
+            e.target.closest('#side-menu') === null &&
+            e.target.closest('#sidebar-toggle') === null) {
+            closeSideMenu();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && UI_ELEMENTS.sideMenu && !UI_ELEMENTS.sideMenu.classList.contains('hidden')) {
+            closeSideMenu();
+        }
     });
 }
 
@@ -481,6 +633,9 @@ async function init() {
     // Инициализируем модули
     Log.init(UI_ELEMENTS.log);
     UIManager.init(UI_ELEMENTS);
+    if (typeof AuctionManager !== 'undefined' && AuctionManager.init) {
+        AuctionManager.init(UI_ELEMENTS);
+    }
     
     // Убедитесь что tooltip и contextMenu имеют класс hidden по умолчанию
     // (они уже имеют его в HTML, но проверим для надёжности)
