@@ -50,9 +50,8 @@ async def login(payload: dict):
             raise HTTPException(status_code=400, detail="Не указан user_id")
         
         # Убеждаемся что у юзера есть стартовая удочка
-        services.generate_starter_rod(user_id)
-        
         player = database.get_player(user_id, first_name)
+        services.generate_starter_rod(user_id)
         rods = database.get_user_rods(user_id)
         
         active_rod = next((r for r in rods if r['is_active']), None)
