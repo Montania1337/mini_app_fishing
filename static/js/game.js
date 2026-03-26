@@ -95,6 +95,8 @@ async function initializeGame() {
         const data = await API.login();
         GameState.balance = data.balance;
         GameState.rods = data.rods || [];
+        GameState.activeRod = data.active_rod || null;
+        RodManager.currentRods = GameState.rods;
         
         // Обновляем UI
         UIManager.setHTML(UI_ELEMENTS.name, window.user.first_name);
@@ -165,6 +167,7 @@ async function onFish() {
 
     try {
         const fishData = await API.fish();
+        syncActiveRodState(fishData);
         
         // Проверяем, ловится ли рыба автоматически
         if (fishData.auto_catch) {
@@ -192,6 +195,38 @@ async function onAutoCatch(fishData) {
     } catch (e) {
         Log.error(`Ошибка автоловли: ${e.message}`);
     }
+}
+
+function syncActiveRodState(fishData) {
+    if (!GameState.activeRod) return;
+
+    if (fishData.is_broken) {
+        const brokenRodId = GameState.activeRod.id;
+        GameState.rods = GameState.rods.filter((rod) => rod.id !== brokenRodId);
+        GameState.activeRod = null;
+        RodManager.currentRods = GameState.rods;
+        RodManager.renderRodInfo(null, UI_ELEMENTS.rodInfo);
+        Log.warning('Активная удочка сломалась.');
+        return;
+    }
+
+    if (fishData.durability_left === undefined) return;
+
+    GameState.activeRod = {
+        ...GameState.activeRod,
+        durability: fishData.durability_left
+    };
+
+    GameState.rods = GameState.rods.map((rod) => {
+        if (rod.id !== GameState.activeRod.id) return rod;
+        return {
+            ...rod,
+            durability: fishData.durability_left
+        };
+    });
+
+    RodManager.currentRods = GameState.rods;
+    RodManager.renderRodInfo(GameState.activeRod, UI_ELEMENTS.rodInfo);
 }
 
 function setupStrikeListener(fishData) {
@@ -244,7 +279,7 @@ async function refreshInventory() {
         const data = await API.login();
         GameState.rods = data.rods || [];
         InventoryManager.renderInventoryGrid(GameState.rods, UI_ELEMENTS.invGrid);
-        RodManager.renderRodInfo(data.active_rod, UI_ELEMENTS.rodInfo);
+        RodManager.renderRodInfo(GameState.activeRod, UI_ELEMENTS.rodInfo);
     } catch (e) {
         Log.error(`Ошибка обновления инвентаря: ${e.message}`);
     }
