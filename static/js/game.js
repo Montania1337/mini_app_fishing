@@ -159,29 +159,11 @@ async function onFish() {
 }
 
 async function onAutoCatch(fishData) {
-    // Для автоловки просто отправляем один удар, который убивает рыбу
     try {
         const combatData = await API.strikeFish();
-        
-        // Показываем сообщение о победе с подробностями
-        // Используем награду из API ответа и текущий UI элемент который только что отобразили
-        const reward = combatData.reward || 0;
-        const victoryMessage = `Победа! ${fishData.emoji}\n<b>${fishData.fish_name}</b>\n- награда: +${reward} 💰\n⚡`;
-        Log.show(victoryMessage, `rarity-${fishData.display_rarity}`);
-        
-        // Обновляем UI
-        if (combatData.balance !== undefined) {
-            UIManager.updateBalance(combatData.balance);
-        }
-        
-        // Проверяем новые достижения
-        if (combatData.new_achievements && combatData.new_achievements.length > 0) {
-            combatData.new_achievements.forEach(ach => {
-                Log.achievement(ach.name);
-            });
-        }
+        CombatManager.showAutoCatchVictory(fishData, combatData, UI_ELEMENTS);
     } catch (e) {
-        Log.error(`Ошибка автоловки: ${e.message}`);
+        Log.error(`Ошибка автоловли: ${e.message}`);
     }
 }
 
@@ -210,7 +192,6 @@ function setupStrikeListener(fishData) {
             // Если рыба мертва
             if (!combatData.is_alive) {
                 CombatManager.showVictory(combatData, UI_ELEMENTS);
-                UIManager.updateBalance(combatData.balance);
             } else {
                 // Продолжаем слушать удары
                 strikeArea.style.pointerEvents = 'auto';

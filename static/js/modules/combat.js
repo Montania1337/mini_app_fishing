@@ -1,5 +1,5 @@
 /**
- * Combat Module - Логика боевки с рыбой
+ * Combat Module - logic for fish combat and victory handling.
  */
 
 const CombatManager = {
@@ -9,20 +9,19 @@ const CombatManager = {
     show(fishData, combatScreen) {
         this.currentFish = fishData;
         combatScreen.classList.remove('hidden');
-        
-        // Обновляем информацию о рыбе
+
         const fishEmoji = document.getElementById('combat-fish-emoji');
         const fishName = document.getElementById('combat-fish-name');
         const hpFill = document.getElementById('combat-hp-fill');
         const hpText = document.getElementById('combat-hp-text');
-        
+
         if (fishEmoji) fishEmoji.innerText = fishData.emoji || '🐟';
         if (fishName) fishName.innerText = fishData.fish_name || 'Рыба';
         if (hpFill) hpFill.style.width = '100%';
         if (hpText) hpText.innerText = `${fishData.hp}/${fishData.max_hp}`;
-        
+
         if (fishData.is_crit) {
-            Log.success(`🎯 КРИТ! 2.5x к награде!`);
+            Log.success('🎯 КРИТ! 2.5x к награде!');
         }
     },
 
@@ -35,9 +34,9 @@ const CombatManager = {
     updateHP(hp, maxHp, hpFillElement, hpTextElement) {
         if (hpFillElement) {
             const percentage = (hp / maxHp) * 100;
-            hpFillElement.style.width = percentage + '%';
+            hpFillElement.style.width = `${percentage}%`;
         }
-        
+
         if (hpTextElement) {
             hpTextElement.innerText = `${hp}/${maxHp}`;
         }
@@ -48,65 +47,82 @@ const CombatManager = {
         damageDisplay.className = 'damage-display';
         damageDisplay.innerHTML = `<div class="damage-number">-${damage}</div>`;
         container.appendChild(damageDisplay);
-        
-        // Удаляем элемент после анимации
+
         setTimeout(() => damageDisplay.remove(), 600);
     },
 
-    showVictory(data, uiElements) {
-        // Показываем лог с наградой
-        Log.show(
-            `Победа! ${this.currentFish.emoji} <b>${this.currentFish.fish_name}</b> - награда: +${data.reward} 💰`,
-            `rarity-${this.currentFish.display_rarity}`
-        );
+    buildVictoryHtml(fish, reward, options = {}) {
+        const { isAutoCatch = false } = options;
+        const rarityLabel = isAutoCatch
+            ? `${fish.display_rarity} ⚡`
+            : fish.display_rarity;
 
-        // Закрываем экран боевки
-        this.hide(uiElements.combatScreen);
-        
-        // Показываем основной контент
+        return `
+            <div class="log-content">
+                <div class="log-icon">${fish.emoji}</div>
+
+                <div class="log-info">
+                    <div class="log-title">
+                        <b>${fish.fish_name}</b>
+                    </div>
+
+                    <div class="log-meta">
+                        <span class="rarity">${rarityLabel}</span>
+                        <span class="reward">+${reward} 💰</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    applyVictoryEffects(data, uiElements, options = {}) {
+        const { hideCombatScreen = false } = options;
+
+        if (hideCombatScreen) {
+            this.hide(uiElements.combatScreen);
+        }
+
         if (uiElements.main) uiElements.main.style.display = 'block';
         if (uiElements.rodPanel) uiElements.rodPanel.style.display = 'block';
 
-        // Обновляем баланс
-        UIManager.updateBalance(data.balance);
+        if (data.balance !== undefined) {
+            UIManager.updateBalance(data.balance);
+        }
 
-        // Проверяем новые достижения
         if (data.new_achievements && data.new_achievements.length > 0) {
-            data.new_achievements.forEach(ach => {
+            data.new_achievements.forEach((ach) => {
                 Log.achievement(ach.name);
             });
         }
 
-        // Хапик обратной связи
         if (window.tg && window.tg.HapticFeedback) {
             window.tg.HapticFeedback.notificationOccurred('success');
         }
     },
 
-    showVictoryWithFish(fish, data, uiElements) {
-        // Показываем лог с наградой (для автоловки когда currentFish может быть null)
+    completeVictory(fish, data, uiElements, options = {}) {
+        if (!fish) {
+            console.warn('CombatManager.completeVictory called without fish data');
+            return;
+        }
+
         Log.show(
-            `Победа! ${fish.emoji} <b>${fish.fish_name}</b> - награда: +${data.reward} 💰`,
+            this.buildVictoryHtml(fish, data.reward || 0, options),
             `rarity-${fish.display_rarity}`
         );
 
-        // Показываем основной контент
-        if (uiElements.main) uiElements.main.style.display = 'block';
-        if (uiElements.rodPanel) uiElements.rodPanel.style.display = 'block';
+        this.applyVictoryEffects(data, uiElements, options);
+    },
 
-        // Обновляем баланс
-        UIManager.updateBalance(data.balance);
+    showVictory(data, uiElements) {
+        this.completeVictory(this.currentFish, data, uiElements, {
+            hideCombatScreen: true
+        });
+    },
 
-        // Проверяем новые достижения
-        if (data.new_achievements && data.new_achievements.length > 0) {
-            data.new_achievements.forEach(ach => {
-                Log.achievement(ach.name);
-            });
-        }
-
-        // Хапик обратной связи
-        if (window.tg && window.tg.HapticFeedback) {
-            window.tg.HapticFeedback.notificationOccurred('success');
-        }
+    showAutoCatchVictory(fish, data, uiElements) {
+        this.completeVictory(fish, data, uiElements, {
+            isAutoCatch: true
+        });
     }
 };

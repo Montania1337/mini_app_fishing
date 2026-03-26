@@ -98,6 +98,83 @@ main {
     font-family: monospace;
 }
 
+.log-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+
+.log-icon {
+    font-size: 28px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+
+.log-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+}
+
+
+.log-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.log-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    width: 100%;
+}
+
+/* Редкость слева */
+.log-meta .rarity {
+    text-transform: capitalize;
+    opacity: 0.8;
+}
+
+/* 💰 ЗОЛОТО — главный акцент */
+.log-meta .reward {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #FFD700; /* золото */
+    
+    background: rgba(255, 215, 0, 0.12);
+    padding: 2px 8px;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.log-item {
+    position: relative;
+}
+
+.log-time {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    font-size: 0.8rem;
+    opacity: 0.4;
+    font-family: monospace;
+}
+
 .log-item.success {
     border-left-color: var(--success-color);
 }

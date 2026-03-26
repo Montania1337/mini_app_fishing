@@ -190,8 +190,7 @@ FISH_PREFIXES = [
     {"name": "Хилая", "mult": 0.6, "hp_mult": 0.5, "rarity_weight": 80},
     {"name": "Маленькая", "mult": 0.8, "hp_mult": 0.7, "rarity_weight": 150},
     # Обычные
-    {"name": "Средняя", "mult": 1.0, "hp_mult": 1.0, "rarity_weight": 200},
-    {"name": " Обычная", "mult": 1.0, "hp_mult": 1.0, "rarity_weight": 200},
+    {"name": "Обычная", "mult": 1.0, "hp_mult": 1.0, "rarity_weight": 200},
     # Хорошие
     {"name": "Упитанная", "mult": 1.3, "hp_mult": 1.3, "rarity_weight": 70},
     {"name": "Жирная", "mult": 1.5, "hp_mult": 1.5, "rarity_weight": 50},
@@ -311,70 +310,11 @@ ROD_PROPERTY_GS = {
 
 
 
-
-
-
-
-
-# main.py
-
-# ПРЕФИКСЫ (Влияют на Скорость и Опыт)
-PREFIXES = [
-    # Common
-    {"name": "Трухлявая", "rarity": "common", "speed": -0.2, "xp": 0.8},
-    {"name": "Тяжелая", "rarity": "common", "speed": -0.1, "xp": 1.0},
-    {"name": "Обычная", "rarity": "common", "speed": 0.0, "xp": 1.0},
-    # Rare
-    {"name": "Гибкая", "rarity": "rare", "speed": 0.15, "xp": 1.1},
-    {"name": "Удобная", "rarity": "rare", "speed": 0.1, "xp": 1.3},
-    {"name": "Спортивная", "rarity": "rare", "speed": 0.25, "xp": 1.0},
-    # Epic
-    {"name": "Высокотехнологичная", "rarity": "epic", "speed": 0.4, "xp": 1.2},
-    {"name": "Магическая", "rarity": "epic", "speed": 0.1, "xp": 2.5},
-    {"name": "Сверхзвуковая", "rarity": "epic", "speed": 0.6, "xp": 0.9},
-    # Legendary
-    {"name": "Божественная", "rarity": "legendary", "speed": 0.5, "xp": 3.0},
-    {"name": "Астральная", "rarity": "legendary", "speed": 0.8, "xp": 1.5},
-    {"name": "Кибернетическая", "rarity": "legendary", "speed": 0.7, "xp": 2.0},
-]
-
-# ОСНОВЫ (Влияют на Множитель денег)
-ROD_BASES = [
-    {"name": "Палка", "rarity": "common", "mult": 0.5},
-    {"name": "Удочка", "rarity": "common", "mult": 1.0},
-    {"name": "Спиннинг", "rarity": "rare", "mult": 1.8},
-    {"name": "Телескопичка", "rarity": "rare", "mult": 2.2},
-    {"name": "Карбоновая нить", "rarity": "epic", "mult": 4.0},
-    {"name": "Гарпун", "rarity": "epic", "mult": 5.5},
-    {"name": "Расщепитель атомов", "rarity": "legendary", "mult": 12.0},
-]
-
-# СУФФИКСЫ (Влияют на Удачу и Прочность)
-SUFFIXES = [
-    # Common
-    {"name": "из мусора", "rarity": "common", "rare": 0.0, "dur": 10},
-    {"name": "Новичка", "rarity": "common", "rare": 0.02, "dur": 30},
-    {"name": "с помойки", "rarity": "common", "rare": -0.05, "dur": 15},
-    # Rare
-    {"name": "Рыболова", "rarity": "rare", "rare": 0.1, "dur": 100},
-    {"name": "Удачи", "rarity": "rare", "rare": 0.25, "dur": 60},
-    {"name": "Стали", "rarity": "rare", "rare": 0.05, "dur": 300},
-    # Epic
-    {"name": "Погибели", "rarity": "epic", "rare": 0.4, "dur": 150},
-    {"name": "Магната", "rarity": "epic", "rare": 0.2, "dur": 500},
-    {"name": "Вечности", "rarity": "epic", "rare": 0.15, "dur": -1}, # Неломаемая
-    # Legendary
-    {"name": "Дракона", "rarity": "legendary", "rare": 0.8, "dur": 1000},
-    {"name": "Посейдона", "rarity": "legendary", "rare": 1.5, "dur": 2000},
-    {"name": "Читера", "rarity": "legendary", "rare": 5.0, "dur": 7}, # Мощная, но на 7 забросов
-]
-
-
 ACHIEVEMENTS_LIST = {
     "first_fish": {"name": "Первый улов", "desc": "Поймайте свою первую рыбу", "target": 1},
     "big_fish": {"name": "Рыболов-любитель", "desc": "Поймайте 50 рыб", "target": 50},
     "rich_man": {"name": "Богатей", "desc": "Накопите 1000 монет", "target": 1000},
-    "collector": {"name": "Коллекционер", "desc": "Владейте 5 удочками (Не работает)", "target": 5}
+    "collector": {"name": "Коллекционер", "desc": "Владейте 5 удочками", "target": 5}
 }
 
 ACHIEVEMENT_RULES = {

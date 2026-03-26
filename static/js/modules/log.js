@@ -12,10 +12,16 @@ const Log = {
         
         const li = document.createElement('li');
         li.className = `log-item ${type}`;
-        li.innerHTML = `<span>${new Date().toLocaleTimeString()}</span> ${text}`;
+
+        const time = new Date().toLocaleTimeString();
+
+        li.innerHTML = `
+            <div class="log-time">${time}</div>
+            ${text}
+        `;
+
         this.logElement.prepend(li);
         
-        // Ограничиваем количество логов
         if (this.logElement.children.length > 20) {
             this.logElement.lastChild.remove();
         }
