@@ -4,8 +4,12 @@ from typing import Optional, List, Dict
 
 from .config import DATABASE_DIR
 
-DATABASE_DIR.mkdir(exist_ok=True)
+from pathlib import Path
+
+DATABASE_DIR = Path('/var/lib/docker/volumes/fish_app_db_data/_data')
 DATABASE_FILE_PATH = DATABASE_DIR / 'fishing.db'
+
+DATABASE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def get_connection():
