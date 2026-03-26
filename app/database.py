@@ -1,11 +1,9 @@
 import sqlite3
 import json
 from contextlib import contextmanager
-from pathlib import Path
 from typing import Optional, List, Dict
 
-DATABASE_DIR = Path('/var/lib/docker/volumes/fish_app_db_data/_data')
-DATABASE_FILE_PATH = DATABASE_DIR / 'fishing.db'
+from .config import DATABASE_DIR, DATABASE_FILE_PATH
 
 DATABASE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -19,6 +17,8 @@ def get_connection():
         conn.row_factory = sqlite3.Row  # row['id']
         conn.execute("PRAGMA foreign_keys = ON")
         conn.execute("PRAGMA busy_timeout = 10000")
+        conn.execute("PRAGMA journal_mode = WAL")
+        conn.execute("PRAGMA synchronous = NORMAL")
         yield conn
     finally:
         if conn is not None:
@@ -114,7 +114,7 @@ def init_db():
         except: pass
         conn.commit()
 
-    print("База данных успешно инициализирована")
+    print(f"База данных успешно инициализирована: {DATABASE_FILE_PATH}")
 
 # --- ФУНКЦИИ ИГРОКА ---
 

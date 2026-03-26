@@ -1,7 +1,10 @@
+import os
 import pathlib
 
 ROOT_DIR = pathlib.Path(__file__).parent.parent
-DATABASE_DIR = ROOT_DIR / '.database'
+DEFAULT_DATABASE_PATH = ROOT_DIR / '.database' / 'fishing.db'
+DATABASE_FILE_PATH = pathlib.Path(os.getenv('DATABASE_PATH', str(DEFAULT_DATABASE_PATH)))
+DATABASE_DIR = DATABASE_FILE_PATH.parent
 
 # app/config.py
 #  uvicorn main:app  --port 5000

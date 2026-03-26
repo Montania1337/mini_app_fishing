@@ -1,6 +1,7 @@
 FROM python:3.14-slim
 
 ENV PYTHONBUFFERED=1
+ENV DATABASE_PATH=/data/fishing.db
 
 WORKDIR /opt/fishingapp
 
@@ -12,6 +13,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     python3 -m pip --no-cache-dir install -r requirements.txt
 
 COPY . .
+
+RUN mkdir -p /data
+
+VOLUME ["/data"]
 
 ENTRYPOINT ["uvicorn", "main:app"]
 
