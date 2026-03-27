@@ -42,16 +42,16 @@ INCOME_PROPERTIES = {
         "name": "💰 Множитель награды",
         "description": "Увеличивает количество монет, получаемых за улов",
         "tiers": {
-            1: {"value": 1.0, "rarity_weight": 1000, "gs_value": 1},
-            2: {"value": 1.2, "rarity_weight": 800, "gs_value": 2},
-            3: {"value": 1.4, "rarity_weight": 600, "gs_value": 4},
-            4: {"value": 1.7, "rarity_weight": 400, "gs_value": 6},
-            5: {"value": 2.0, "rarity_weight": 250, "gs_value": 8},
-            6: {"value": 2.5, "rarity_weight": 150, "gs_value": 10},
-            7: {"value": 3.2, "rarity_weight": 80, "gs_value": 14},
-            8: {"value": 4.0, "rarity_weight": 40, "gs_value": 18},
-            9: {"value": 5.5, "rarity_weight": 15, "gs_value": 24},
-            10: {"value": 8.0, "rarity_weight": 3, "gs_value": 32},
+            1: {"value": 1.2, "rarity_weight": 1000, "gs_value": 1},
+            2: {"value": 1.4, "rarity_weight": 800, "gs_value": 2},
+            3: {"value": 1.7, "rarity_weight": 600, "gs_value": 4},
+            4: {"value": 2.0, "rarity_weight": 400, "gs_value": 6},
+            5: {"value": 2.5, "rarity_weight": 250, "gs_value": 8},
+            6: {"value": 3.2, "rarity_weight": 150, "gs_value": 10},
+            7: {"value": 4.0, "rarity_weight": 80, "gs_value": 14},
+            8: {"value": 5.5,"rarity_weight": 40, "gs_value": 18},
+            9: {"value": 8.0, "rarity_weight": 15, "gs_value": 24},
+            10: {"value": 10.0, "rarity_weight": 3, "gs_value": 32},
         }
     },
     "xp": {
@@ -78,16 +78,16 @@ COMBAT_PROPERTIES = {
         "name": "🍀 Удача (Редкое)",
         "description": "Повышает шанс поймать рыбу редкой редкости",
         "tiers": {
-            1: {"value": 0.0, "rarity_weight": 1000, "gs_value": 1},
-            2: {"value": 0.05, "rarity_weight": 800, "gs_value": 2},
-            3: {"value": 0.10, "rarity_weight": 600, "gs_value": 4},
-            4: {"value": 0.15, "rarity_weight": 400, "gs_value": 6},
-            5: {"value": 0.25, "rarity_weight": 250, "gs_value": 8},
-            6: {"value": 0.35, "rarity_weight": 150, "gs_value": 10},
-            7: {"value": 0.50, "rarity_weight": 80, "gs_value": 14},
-            8: {"value": 0.75, "rarity_weight": 40, "gs_value": 18},
-            9: {"value": 1.0, "rarity_weight": 15, "gs_value": 24},
-            10: {"value": 1.5, "rarity_weight": 3, "gs_value": 32},
+            1: {"value": 0.05,"rarity_weight": 1000, "gs_value": 1},
+            2: {"value": 0.10, "rarity_weight": 800, "gs_value": 2},
+            3: {"value": 0.15, "rarity_weight": 600, "gs_value": 4},
+            4: {"value": 0.25, "rarity_weight": 400, "gs_value": 6},
+            5: {"value": 0.35, "rarity_weight": 250, "gs_value": 8},
+            6: {"value": 0.50, "rarity_weight": 150, "gs_value": 10},
+            7: {"value": 0.75, "rarity_weight": 80, "gs_value": 14},
+            8: {"value": 1.2,  "rarity_weight": 40, "gs_value": 18},
+            9: {"value": 1.7, "rarity_weight": 15, "gs_value": 24},
+            10: {"value": 2.3, "rarity_weight": 3, "gs_value": 32},
         }
     },
     "speed": {
@@ -126,32 +126,32 @@ COMBAT_PROPERTIES = {
         "name": "💥 Крит-удар",
         "description": "Шанс нанести критический удар и получить 2.5x награду",
         "tiers": {
-            1: {"value": 0.0, "rarity_weight": 1000, "gs_value": 1},
-            2: {"value": 0.02, "rarity_weight": 800, "gs_value": 2},
-            3: {"value": 0.05, "rarity_weight": 600, "gs_value": 4},
-            4: {"value": 0.08, "rarity_weight": 400, "gs_value": 6},
-            5: {"value": 0.12, "rarity_weight": 250, "gs_value": 8},
-            6: {"value": 0.17, "rarity_weight": 150, "gs_value": 10},
-            7: {"value": 0.25, "rarity_weight": 80, "gs_value": 14},
-            8: {"value": 0.35, "rarity_weight": 40, "gs_value": 18},
-            9: {"value": 0.50, "rarity_weight": 15, "gs_value": 24},
-            10: {"value": 0.75, "rarity_weight": 3, "gs_value": 32},
+            1: {"value": 0.02, "rarity_weight": 1000, "gs_value": 1},
+            2: {"value": 0.05, "rarity_weight": 800, "gs_value": 2},
+            3: {"value": 0.08, "rarity_weight": 600, "gs_value": 4},
+            4: {"value": 0.12, "rarity_weight": 400, "gs_value": 6},
+            5: {"value": 0.17, "rarity_weight": 250, "gs_value": 8},
+            6: {"value": 0.25, "rarity_weight": 150, "gs_value": 10},
+            7: {"value": 0.35, "rarity_weight": 80, "gs_value": 14},
+            8: {"value": 0.47, "rarity_weight": 40, "gs_value": 18},
+            9: {"value": 0.62, "rarity_weight": 15, "gs_value": 24},
+            10: {"value": 0.80, "rarity_weight": 3, "gs_value": 32},
         }
     },
     "power": {
         "name": "💪 Мощь",
         "description": "Увеличивает урон удочки процентно",
         "tiers": {
-            1: {"value": 1.05, "rarity_weight": 1000, "gs_value": 1},
-            2: {"value": 1.1, "rarity_weight": 800, "gs_value": 2},
-            3: {"value": 1.2, "rarity_weight": 600, "gs_value": 4},
-            4: {"value": 1.3, "rarity_weight": 400, "gs_value": 6},
-            5: {"value": 1.5, "rarity_weight": 250, "gs_value": 8},
-            6: {"value": 1.7, "rarity_weight": 150, "gs_value": 10},
-            7: {"value": 2.0, "rarity_weight": 80, "gs_value": 14},
-            8: {"value": 2.5, "rarity_weight": 40, "gs_value": 18},
-            9: {"value": 3.0, "rarity_weight": 15, "gs_value": 24},
-            10: {"value": 4.0, "rarity_weight": 3, "gs_value": 32},
+            1: {"value": 1.15, "rarity_weight": 1000, "gs_value": 1},
+            2: {"value": 1.25, "rarity_weight": 800, "gs_value": 2},
+            3: {"value": 1.55, "rarity_weight": 600, "gs_value": 4},
+            4: {"value": 1.9, "rarity_weight": 400, "gs_value": 6},
+            5: {"value": 2.4, "rarity_weight": 250, "gs_value": 8},
+            6: {"value": 3, "rarity_weight": 150, "gs_value": 10},
+            7: {"value": 3.7, "rarity_weight": 80, "gs_value": 14},
+            8: {"value": 4.6, "rarity_weight": 40, "gs_value": 18},
+            9: {"value": 5.7, "rarity_weight": 15, "gs_value": 24},
+            10: {"value": 7.2, "rarity_weight": 3, "gs_value": 32},
         }
     },
     "piercing": {
@@ -175,13 +175,38 @@ COMBAT_PROPERTIES = {
 # Объединённый словарь для совместимости со старым кодом
 ROD_PROPERTIES = {**INCOME_PROPERTIES, **COMBAT_PROPERTIES}
 
+# Удочки
+FISHING_ROD_BASES = [
+    {"rarity": "common", "durabillity" : (50, 150), "damage": (1,3), "rarity_weight": 700},
+    {"rarity": "uncommon", "durabillity" : (120, 250), "damage": (2,5), "rarity_weight": 500},
+    {"rarity": "rare", "durabillity" : (220, 500), "damage": (3,7), "rarity_weight": 300},
+    {"rarity": "epic", "durabillity" : (450, 800), "damage": (6,10), "rarity_weight": 100},
+    {"rarity": "legendary", "durabillity" : (700, 1000), "damage": (8,15), "rarity_weight": 20},
+]
+
+FISHING_ROD_BASES_WEIGHTS = [
+    rod_base["rarity_weight"] for rod_base in FISHING_ROD_BASES
+]
+
 # Рыбы
 FISHES = [
-    {"name": "Карась", "emoji": "🐟", "rarity": "common", "base_price": 5, "base_hp": 10, "rarity_weight": 600},
-    {"name": "Окунь", "emoji": "🐠", "rarity": "uncommon", "base_price": 10, "base_hp": 20, "rarity_weight": 250},
-    {"name": "Форель", "emoji": "🐡", "rarity": "rare", "base_price": 25, "base_hp": 35, "rarity_weight": 80},
-    {"name": "Золотая рыбка", "emoji": "✨", "rarity": "epic", "base_price": 100, "base_hp": 75, "rarity_weight": 15},
+    {"name": "Карась", "emoji": "🐟", "rarity": "common", "base_price": 10, "base_hp": 12, "rarity_weight": 500},
+    {"name": "Окунь", "emoji": "🐠", "rarity": "uncommon", "base_price": 15, "base_hp": 20, "rarity_weight": 300},
+    {"name": "Креветка", "emoji": "🦐", "rarity": "common", "base_price": 15, "base_hp": 5, "rarity_weight": 200},
+    {"name": "Краб", "emoji": "🦀", "rarity": "rare", "base_price": 35, "base_hp": 20, "rarity_weight": 150},
+    {"name": "Ракушка", "emoji": "🐚", "rarity": "epic", "base_price": 15, "base_hp": 5, "rarity_weight": 150},
+    {"name": "Ботинок", "emoji": "🥾", "rarity": "common", "base_price": 2, "base_hp": 10, "rarity_weight": 80},
+    {"name": "Фугу", "emoji": "🐡", "rarity": "rare", "base_price": 25, "base_hp": 35, "rarity_weight": 80},
+    {"name": "Золотая рыбка", "emoji": "✨", "rarity": "epic", "base_price": 100, "base_hp": 75, "rarity_weight": 35},
+    {"name": "Акула", "emoji": "🦈", "rarity": "epic", "base_price": 150, "base_hp": 100, "rarity_weight": 15},
+    {"name": "Водоросли", "emoji": "🌿", "rarity": "common", "base_price": 2, "base_hp": 5, "rarity_weight": 5},
+    {"name": "Пластиковый стаканчик", "emoji": "🥤", "rarity": "common", "base_price": 2, "base_hp": 5, "rarity_weight": 5},
+    {"name": "Фотоаппарат", "emoji": "📷", "rarity": "uncommon", "base_price": 30, "base_hp": 5, "rarity_weight": 5},
+    {"name": "Ключ", "emoji": "🗝️", "rarity": "rare", "base_price": 50, "base_hp": 5, "rarity_weight": 3},
     {"name": "Кракен", "emoji": "🦑", "rarity": "legendary", "base_price": 500, "base_hp": 200, "rarity_weight": 3},
+    {"name": "Лотерейный билет", "emoji": "🎟️", "rarity": "rare", "base_price": 60, "base_hp": 5, "rarity_weight": 2},
+    {"name": "Кольцо", "emoji": "💍", "rarity": "epic", "base_price": 180, "base_hp": 5, "rarity_weight": 1},
+    {"name": "Молюск", "emoji": "🦪", "rarity": "legendary", "base_price": 150, "base_hp": 5, "rarity_weight": 1},
 ]
 
 
@@ -193,11 +218,12 @@ FISH_PREFIXES = [
     {"name": "Хилая", "mult": 0.6, "hp_mult": 0.5, "rarity_weight": 80},
     {"name": "Маленькая", "mult": 0.8, "hp_mult": 0.7, "rarity_weight": 150},
     # Обычные
-    {"name": "Обычная", "mult": 1.0, "hp_mult": 1.0, "rarity_weight": 200},
+    {"name": "", "mult": 1.0, "hp_mult": 1.0, "rarity_weight": 200},
     # Хорошие
     {"name": "Упитанная", "mult": 1.3, "hp_mult": 1.3, "rarity_weight": 70},
     {"name": "Жирная", "mult": 1.5, "hp_mult": 1.5, "rarity_weight": 50},
     {"name": "Бодрая", "mult": 1.6, "hp_mult": 1.4, "rarity_weight": 40},
+    {"name": "Быстрая", "mult": 1.8, "hp_mult": 1.8, "rarity_weight": 20},
     {"name": "Крупная", "mult": 1.8, "hp_mult": 1.8, "rarity_weight": 30},
     # Эпические
     {"name": "Гигантская", "mult": 2.5, "hp_mult": 2.5, "rarity_weight": 15},
@@ -213,16 +239,18 @@ FISH_SUFFIXES = [
     # Отрицательные / Странные
     {"name": "с тиной", "mult": 0.9, "hp_mult": 0.8, "rarity_weight": 100},
     {"name": "в мусоре", "mult": 0.7, "hp_mult": 0.6, "rarity_weight": 50},
+    {"name": "с барнаклами", "mult": 0.3, "hp_mult": 0.7, "rarity_weight": 50},
     {"name": "зомби", "mult": 1.2, "hp_mult": 1.5, "rarity_weight": 30},
     {"name": "мутант", "mult": 1.5, "hp_mult": 1.8, "rarity_weight": 20},
     {"name": "радиоактивная", "mult": 2.2, "hp_mult": 2.0, "rarity_weight": 15},
+    {"name": "под гипнозом", "mult": 1.7, "hp_mult": 1.5, "rarity_weight": 15},
     # Магические / Ценные
     {"name": "из бездны", "mult": 2.5, "hp_mult": 2.8, "rarity_weight": 15},
     {"name": "светящаяся", "mult": 3.0, "hp_mult": 2.5, "rarity_weight": 12},
     {"name": "в короне", "mult": 4.5, "hp_mult": 4.0, "rarity_weight": 8},
     {"name": "хрустальная", "mult": 6.0, "hp_mult": 5.5, "rarity_weight": 5},
     {"name": "из чистого серебра", "mult": 12.0, "hp_mult": 10.0, "rarity_weight": 3},
-    {"name": "Чистое Золото", "mult": 25.0, "hp_mult": 22.0, "rarity_weight": 1.5},
+    {"name": "из чистого золота", "mult": 25.0, "hp_mult": 22.0, "rarity_weight": 1.5},
     {"name": "Алмазная", "mult": 50.0, "hp_mult": 45.0, "rarity_weight": 0.5},
     {"name": "Админская", "mult": 100.0, "hp_mult": 99.0, "rarity_weight": 0.1}, 
 ]
@@ -242,62 +270,80 @@ ACHIEVEMENTS_LIST = {
 }
 
 
-# КОНСТАНТЫ ДЛЯ ФРОНТА
-
+# КОНСТАНТЫ ДЛЯ ФРОНТА (константы отправлены на фронт)
 ROD_PROPERTY_NAMES = {
-    'reward': '💰 Множитель награды',
-    'xp': '✨ Опыт',
-    'luck': '🍀 Удача',
-    'speed': '⚡ Скорость',
-    'durability': '🛡️ Прочность',
-    'crit': '💥 Крит-удар',
-    'power': '💪 Мощь',
-    'piercing': '🔓 Пробивание'
+    property_name: property_data["name"] 
+    for property_name, property_data in ROD_PROPERTIES.items()
 }
+
+
+# ROD_PROPERTY_NAMES = {
+#     'reward': '💰 Множитель награды',
+#     'xp': '✨ Опыт',
+#     'luck': '🍀 Удача',
+#     'speed': '⚡ Скорость',
+#     'durability': '🛡️ Прочность',
+#     'crit': '💥 Крит-удар',
+#     'power': '💪 Мощь',
+#     'piercing': '🔓 Пробивание'
+# }
 
 # Описания свойств удочек
 ROD_PROPERTY_DESCRIPTIONS = {
-    'reward': 'Увеличивает количество монет, получаемых за улов',
-    'xp': 'Увеличивает количество опыта за улов',
-    'luck': 'Повышает шанс поймать рыбу редкой редкости',
-    'speed': 'Ускоряет скорость рыбалки (сокращает время между забросами)',
-    'crit': 'Шанс нанести критический удар и получить 2.5x награду',
-    'durability': 'Определяет сколько раз можно использовать удочку',
-    'power': 'Увеличивает урон удочки процентно',
-    'piercing': 'Увеличивает порог автоловки слабых рыб на X HP'
+    property_name: property_data["description"]
+    for property_name, property_data in ROD_PROPERTIES.items()
 }
 
-# Значения свойств по тирам (включая GS)
+# ROD_PROPERTY_DESCRIPTIONS = {
+#     'reward': 'Увеличивает количество монет, получаемых за улов',
+#     'xp': 'Увеличивает количество опыта за улов',
+#     'luck': 'Повышает шанс поймать рыбу редкой редкости',
+#     'speed': 'Ускоряет скорость рыбалки (сокращает время между забросами)',
+#     'crit': 'Шанс нанести критический удар и получить 2.5x награду',
+#     'durability': 'Определяет сколько раз можно использовать удочку',
+#     'power': 'Увеличивает урон удочки процентно',
+#     'piercing': 'Увеличивает порог автоловки слабых рыб на X HP'
+# }
+
+# {'property_name': {tier_1: value_1, tier_2: value_2, ..., tier_n: value_n}}
 ROD_PROPERTY_VALUES = {
-    'reward': {
-        1: 1.0, 2: 1.2, 3: 1.4, 4: 1.7, 5: 2.0,
-        6: 2.5, 7: 3.2, 8: 4.0, 9: 5.5, 10: 8.0
-    },
-    'xp': {
-        1: 1.0, 2: 1.1, 3: 1.2, 4: 1.4, 5: 1.7,
-        6: 2.0, 7: 2.5, 8: 3.2, 9: 4.0, 10: 5.5
-    },
-    'luck': {
-        1: 0.0, 2: 0.05, 3: 0.10, 4: 0.15, 5: 0.25,
-        6: 0.35, 7: 0.50, 8: 0.75, 9: 1.0, 10: 1.5
-    },
-    'speed': {
-        1: 0.0, 2: 0.05, 3: 0.10, 4: 0.15, 5: 0.25,
-        6: 0.35, 7: 0.50, 8: 0.70, 9: 1.0, 10: 1.5
-    },
-    'crit': {
-        1: 0.0, 2: 0.02, 3: 0.05, 4: 0.08, 5: 0.12,
-        6: 0.17, 7: 0.25, 8: 0.35, 9: 0.50, 10: 0.75
-    },
-    'power': {
-        1: 1.05, 2: 1.1, 3: 1.2, 4: 1.3, 5: 1.5,
-        6: 1.7, 7: 2.0, 8: 2.5, 9: 3.0, 10: 4.0
-    },
-    'piercing': {
-        1: 0, 2: 1, 3: 2, 4: 3, 5: 5,
-        6: 8, 7: 12, 8: 18, 9: 25, 10: 35
+    property_name: {
+        tier: tier_data["value"] for tier, tier_data in property_data["tiers"].items()
     }
+    for property_name, property_data in ROD_PROPERTIES.items()
 }
+
+# # Значения свойств по тирам (включая GS)
+# ROD_PROPERTY_VALUES = {
+#     'reward': {
+#         1: 1.0, 2: 1.2, 3: 1.4, 4: 1.7, 5: 2.0,
+#         6: 2.5, 7: 3.2, 8: 4.0, 9: 5.5, 10: 8.0
+#     },
+#     'xp': {
+#         1: 1.0, 2: 1.1, 3: 1.2, 4: 1.4, 5: 1.7,
+#         6: 2.0, 7: 2.5, 8: 3.2, 9: 4.0, 10: 5.5
+#     },
+#     'luck': {
+#         1: 0.0, 2: 0.05, 3: 0.10, 4: 0.15, 5: 0.25,
+#         6: 0.35, 7: 0.50, 8: 0.75, 9: 1.0, 10: 1.5
+#     },
+#     'speed': {
+#         1: 0.0, 2: 0.05, 3: 0.10, 4: 0.15, 5: 0.25,
+#         6: 0.35, 7: 0.50, 8: 0.70, 9: 1.0, 10: 1.5
+#     },
+#     'crit': {
+#         1: 0.0, 2: 0.02, 3: 0.05, 4: 0.08, 5: 0.12,
+#         6: 0.17, 7: 0.25, 8: 0.35, 9: 0.50, 10: 0.75
+#     },
+#     'power': {
+#         1: 1.05, 2: 1.1, 3: 1.2, 4: 1.3, 5: 1.5,
+#         6: 1.7, 7: 2.0, 8: 2.5, 9: 3.0, 10: 4.0
+#     },
+#     'piercing': {
+#         1: 0, 2: 1, 3: 2, 4: 3, 5: 5,
+#         6: 8, 7: 12, 8: 18, 9: 25, 10: 35
+#     }
+# }
 
 # Gear Score значения (GS) для каждого тира каждого свойства
 ROD_PROPERTY_GS = {
