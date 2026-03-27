@@ -2,6 +2,8 @@
  * Rod Module - Управление удочками и инвентарем
  */
 
+// import {propOrder} from './constants.js'
+
 const RodManager = {
     currentRods: [],
     activeRodId: null,
@@ -22,18 +24,18 @@ const RodManager = {
         if (value === undefined) return '';
         
         switch (propName) {
-            case 'reward':
+            case 'rod_reward_increase':
             case 'xp':
                 return `x${value.toFixed(1)}`;
-            case 'luck':
+            case 'rod_luck_increase':
             case 'speed':
             case 'rod_crit_chance_increase':
                 return `+${(value * 100).toFixed(0)}%`;
-            case 'durability':
+            case 'rod_durability_increase':
                 return value === -1 ? '∞' : `${value} раз`;
             case 'rod_power_increase':
                 return `x${value.toFixed(1)}`;
-            case 'piercing':
+            case 'rod_piercing_increase':
                 return `+${value}`;
             default:
                 return value;
@@ -91,7 +93,7 @@ const RodManager = {
         let propertiesHTML = '';
         if (Object.keys(properties).length > 0) {
             propertiesHTML = '<div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 8px;">';
-            const propOrder = ['reward', 'xp', 'luck', 'speed', 'rod_power_increase', 'piercing', 'rod_crit_chance_increase'];
+            const propOrder = ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'];
             
             for (const propName of propOrder) {
                 if (propName in properties) {

@@ -1,6 +1,7 @@
 import sqlite3
 import json
 from contextlib import contextmanager
+from app.config import GlobalKeyWords
 from typing import Optional, List, Dict
 
 from .config import DATABASE_DIR, DATABASE_FILE_PATH
@@ -113,7 +114,7 @@ def init_db():
             conn.execute("ALTER TABLE auction_listings ADD COLUMN seller_name TEXT DEFAULT 'Рыбак'")
         except: pass
         conn.commit()
-
+    rename_rod_properties_in_db()
     print(f"База данных успешно инициализирована: {DATABASE_FILE_PATH}")
 
 # --- ФУНКЦИИ ИГРОКА ---
@@ -138,6 +139,54 @@ def get_player(user_id: int, username: str) -> Dict:
                 player['total_caught'] = 0
             return player
         return {"user_id": user_id, "username": username, "balance": 0, "max_catch": 0, "total_caught": 0}
+
+def rename_rod_properties_in_db() -> int:
+    property_renames = {
+        "power": GlobalKeyWords.ROD_POWER_INCREASE,
+        "luck": GlobalKeyWords.ROD_LUCK_INCREASE,
+        "reward": GlobalKeyWords.ROD_REWARD_INCREASE,
+        "crit": GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE,
+        "durability": GlobalKeyWords.ROD_DURABILITY_INCREASE
+    }
+
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, properties FROM rods WHERE properties IS NOT NULL AND properties != ''")
+
+        updated_count = 0
+        for row in cursor.fetchall():
+            try:
+                properties = json.loads(row['properties'])
+            except (TypeError, json.JSONDecodeError):
+                continue
+
+            if not isinstance(properties, dict):
+                continue
+
+            changed = False
+            for old_name, new_name in property_renames.items():
+                if old_name not in properties:
+                    continue
+
+                if new_name not in properties:
+                    properties[new_name] = properties[old_name]
+                del properties[old_name]
+                changed = True
+
+            if not changed:
+                continue
+
+            cursor.execute(
+                "UPDATE rods SET properties = ? WHERE id = ?",
+                (json.dumps(properties), row['id'])
+            )
+            updated_count += 1
+
+        conn.commit()
+        return updated_count
+
+
+_base_init_db = init_db
 
 def update_balance(user_id: int, amount: int) -> int:
     with get_connection() as conn:

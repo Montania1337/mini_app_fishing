@@ -1,6 +1,7 @@
 /**
  * Tooltip Module - Управление tooltip и контекстным меню
  */
+// import {propOrder} from './constants.js'
 
 const TooltipManager = {
     currentTooltip: null,
@@ -16,7 +17,7 @@ const TooltipManager = {
         const damage = RodManager.calculateEffectiveDamage(rod);
         
         let statsHTML = '';
-        const propOrder = ['reward', 'xp', 'luck', 'speed', 'rod_power_increase', 'piercing', 'rod_crit_chance_increase'];
+        const propOrder = ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'];
         
         for (const prop of propOrder) {
             if (prop in properties) {
@@ -138,7 +139,7 @@ const TooltipManager = {
                 ⬆️ Улучшить
             </div>
             <div class="context-menu-item" data-action="auction">
-                На аукцион
+                ⚖️ На аукцион
             </div>
             <div class="context-menu-item" data-action="equip">
                 ✅ Надеть
@@ -241,7 +242,7 @@ const TooltipManager = {
         const damage = RodManager.calculateEffectiveDamage(rod);
         
         let statsHTML = '';
-        const propOrder = ['reward', 'xp', 'luck', 'speed', 'rod_power_increase', 'piercing', 'rod_crit_chance_increase'];
+        const propOrder = ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'];
         
         // Добавляем урон
         statsHTML += `

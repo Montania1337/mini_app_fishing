@@ -139,13 +139,13 @@ def catch_fish_logic(rod: dict):
     reward_mult = 1.0
     crit_chance = 0.0
     
-    if 'luck' in properties:
-        tier = properties['luck']
-        luck_bonus = ROD_PROPERTIES['luck']['tiers'][tier]['value']
+    if GlobalKeyWords.ROD_LUCK_INCREASE in properties:
+        tier = properties[GlobalKeyWords.ROD_LUCK_INCREASE]
+        luck_bonus = ROD_PROPERTIES[GlobalKeyWords.ROD_LUCK_INCREASE]['tiers'][tier]['value']
     
-    if 'reward' in properties:
-        tier = properties['reward']
-        reward_mult = ROD_PROPERTIES['reward']['tiers'][tier]['value']
+    if GlobalKeyWords.ROD_REWARD_INCREASE in properties:
+        tier = properties[GlobalKeyWords.ROD_REWARD_INCREASE]
+        reward_mult = ROD_PROPERTIES[GlobalKeyWords.ROD_REWARD_INCREASE]['tiers'][tier]['value']
 
     if GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE in properties:
         tier = properties[GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE]

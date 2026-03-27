@@ -20,6 +20,10 @@ class GlobalKeyWords(str, Enum):
     ROD_CRIT_CHANCE_INCREASE = "rod_crit_chance_increase"
     ROD_CRIT_DAMAGE_INCREASE = "rod_crit_damage_increase"
     ROD_REWARD_INCREASE = "rod_reward_increase"
+    ROD_LUCK_INCREASE = "rod_luck_increase"
+    ROD_DURABILITY_INCREASE = "rod_durability_increase"
+    ROD_PIERCING_INCREASE = "rod_piercing_increase"
+
 
 ROD_UPGRADE_SYSTEM = {
     1: {"damage_bonus": 1, "cost": 10, "success_chance": 100},    # +1 урон, 100% шанс
@@ -36,6 +40,7 @@ ROD_UPGRADE_SYSTEM = {
 
 # Редкости 
 RARITIES = {
+    "trash":    {"chance": 0, "mult": 1.0, "label": "Мусор", "color": "#6D6D6D"},
     "common":    {"chance": 60, "mult": 1.0, "label": "Обычная", "color": "#bdc3c7"},
     "uncommon":  {"chance": 25, "mult": 1.3, "label": "Необычная", "color": "#2ecc71"},
     "rare":      {"chance": 10, "mult": 1.8, "label": "Редкая", "color": "#3498db"},
@@ -47,7 +52,7 @@ RARITIES = {
 
 # Свойства для увеличения дохода
 INCOME_PROPERTIES = {
-    "reward": {
+    GlobalKeyWords.ROD_REWARD_INCREASE: {
         "name": "💰 Множитель награды",
         "description": "Увеличивает количество монет, получаемых за улов",
         "tiers": {
@@ -85,7 +90,7 @@ INCOME_PROPERTIES = {
 
 # Боевые свойства
 COMBAT_PROPERTIES = {
-    "luck": {
+    GlobalKeyWords.ROD_LUCK_INCREASE: {
         "name": "🍀 Удача (Редкое)",
         "description": "Повышает шанс поймать рыбу редкой редкости",
         "tiers": {
@@ -119,7 +124,7 @@ COMBAT_PROPERTIES = {
         },
         "rarity_weight" : 0
     },
-    "durability": {
+    GlobalKeyWords.ROD_DURABILITY_INCREASE: {
         "name": "🛡️ Прочность",
         "description": "Определяет, сколько раз можно использовать удочку перед поломкой",
         "tiers": {
@@ -170,7 +175,7 @@ COMBAT_PROPERTIES = {
         },
         "rarity_weight" : 500
     },
-    "piercing": {
+    GlobalKeyWords.ROD_PIERCING_INCREASE: {
         "name": "🔓 Пробивание",
         "description": "Увеличивает порог автоловки слабых рыб на X HP",
         "tiers": {
@@ -364,14 +369,14 @@ ROD_PROPERTY_VALUES = {
 
 # Gear Score значения (GS) для каждого тира каждого свойства
 ROD_PROPERTY_GS = {
-    'reward': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
+    GlobalKeyWords.ROD_REWARD_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
     'xp': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
-    'luck': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
+    GlobalKeyWords.ROD_LUCK_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
     'speed': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
-    'durability': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
+    GlobalKeyWords.ROD_DURABILITY_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
     GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
     GlobalKeyWords.ROD_POWER_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
-    'piercing': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32}
+    GlobalKeyWords.ROD_PIERCING_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32}
 }
 
 

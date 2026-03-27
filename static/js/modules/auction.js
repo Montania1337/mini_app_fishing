@@ -2,13 +2,15 @@
  * Auction Module - grid rendering and interactions for marketplace lots.
  */
 
+// import {propOrder} from './constants.js'
+
 const AuctionManager = {
     ui: {},
     selectedRod: null,
     listings: [],
     myListings: [],
     currentBottomSheet: null,
-    propOrder: ['reward', 'xp', 'luck', 'speed', 'rod_power_increase', 'piercing', 'rod_crit_chance_increase'],
+    propOrder_there: ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'],
 
     init(uiElements) {
         this.ui = {
