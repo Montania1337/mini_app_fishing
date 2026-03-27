@@ -17,7 +17,7 @@ const TooltipManager = {
         const damage = RodManager.calculateEffectiveDamage(rod);
         
         let statsHTML = '';
-        const propOrder = ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'];
+        // const propOrder = ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'];
         
         for (const prop of propOrder) {
             if (prop in properties) {

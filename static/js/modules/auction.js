@@ -10,7 +10,7 @@ const AuctionManager = {
     listings: [],
     myListings: [],
     currentBottomSheet: null,
-    propOrder_there: ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'],
+    // propOrder: ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'],
 
     init(uiElements) {
         this.ui = {
@@ -456,7 +456,7 @@ const AuctionManager = {
         const properties = this.parseProperties(listing);
         const blocks = [];
 
-        for (const propName of this.propOrder) {
+        for (const propName of propOrder) {
             if (!(propName in properties)) continue;
 
             const tier = Number(properties[propName]);
@@ -497,7 +497,7 @@ const AuctionManager = {
         const properties = this.parseProperties(listing);
         const blocks = [];
 
-        for (const propName of this.propOrder) {
+        for (const propName of propOrder) {
             if (!(propName in properties)) continue;
 
             const tier = Number(properties[propName]);

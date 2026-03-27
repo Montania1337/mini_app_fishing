@@ -93,7 +93,7 @@ const RodManager = {
         let propertiesHTML = '';
         if (Object.keys(properties).length > 0) {
             propertiesHTML = '<div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 8px;">';
-            const propOrder = ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'];
+            // const propOrder = ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'];
             
             for (const propName of propOrder) {
                 if (propName in properties) {
