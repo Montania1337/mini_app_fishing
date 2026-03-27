@@ -8,7 +8,7 @@ const AuctionManager = {
     listings: [],
     myListings: [],
     currentBottomSheet: null,
-    propOrder: ['reward', 'xp', 'luck', 'speed', 'power', 'piercing', 'crit'],
+    propOrder: ['reward', 'xp', 'luck', 'speed', 'rod_power_increase', 'piercing', 'rod_crit_chance_increase'],
 
     init(uiElements) {
         this.ui = {

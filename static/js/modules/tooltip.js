@@ -16,7 +16,7 @@ const TooltipManager = {
         const damage = RodManager.calculateEffectiveDamage(rod);
         
         let statsHTML = '';
-        const propOrder = ['reward', 'xp', 'luck', 'speed', 'power', 'piercing', 'crit'];
+        const propOrder = ['reward', 'xp', 'luck', 'speed', 'rod_power_increase', 'piercing', 'rod_crit_chance_increase'];
         
         for (const prop of propOrder) {
             if (prop in properties) {
@@ -241,7 +241,7 @@ const TooltipManager = {
         const damage = RodManager.calculateEffectiveDamage(rod);
         
         let statsHTML = '';
-        const propOrder = ['reward', 'xp', 'luck', 'speed', 'power', 'piercing', 'crit'];
+        const propOrder = ['reward', 'xp', 'luck', 'speed', 'rod_power_increase', 'piercing', 'rod_crit_chance_increase'];
         
         // Добавляем урон
         statsHTML += `

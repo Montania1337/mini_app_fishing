@@ -1,5 +1,7 @@
 import os
 import pathlib
+from enum import Enum
+
 
 ROOT_DIR = pathlib.Path(__file__).parent.parent
 DEFAULT_DATABASE_PATH = ROOT_DIR / '.database' / 'fishing.db'
@@ -11,6 +13,13 @@ DATABASE_DIR = DATABASE_FILE_PATH.parent
 # Настройки экономики
 ROD_PRICE = 1
 INVENTORY_SIZE = 20  # Максимальное количество удочек в инвентаре (3 ряда по 4)
+
+
+class GlobalKeyWords(str, Enum):
+    ROD_POWER_INCREASE = "rod_power_increase"
+    ROD_CRIT_CHANCE_INCREASE = "rod_crit_chance_increase"
+    ROD_CRIT_DAMAGE_INCREASE = "rod_crit_damage_increase"
+    ROD_REWARD_INCREASE = "rod_reward_increase"
 
 ROD_UPGRADE_SYSTEM = {
     1: {"damage_bonus": 1, "cost": 10, "success_chance": 100},    # +1 урон, 100% шанс
@@ -52,7 +61,8 @@ INCOME_PROPERTIES = {
             8: {"value": 5.5,"rarity_weight": 40, "gs_value": 18},
             9: {"value": 8.0, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 10.0, "rarity_weight": 3, "gs_value": 32},
-        }
+        },
+        "rarity_weight" : 1000
     },
     "xp": {
         "name": "✨ Опыт",
@@ -68,7 +78,8 @@ INCOME_PROPERTIES = {
             8: {"value": 3.2, "rarity_weight": 40, "gs_value": 18},
             9: {"value": 4.0, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 5.5, "rarity_weight": 3, "gs_value": 32},
-        }
+        },
+        "rarity_weight" : 0
     },
 }
 
@@ -88,7 +99,8 @@ COMBAT_PROPERTIES = {
             8: {"value": 1.2,  "rarity_weight": 40, "gs_value": 18},
             9: {"value": 1.7, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 2.3, "rarity_weight": 3, "gs_value": 32},
-        }
+        },
+        "rarity_weight" : 1000
     },
     "speed": {
         "name": "⚡ Скорость",
@@ -104,7 +116,8 @@ COMBAT_PROPERTIES = {
             8: {"value": 0.70, "rarity_weight": 40, "gs_value": 18},
             9: {"value": 1.0, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 1.5, "rarity_weight": 3, "gs_value": 32},
-        }
+        },
+        "rarity_weight" : 0
     },
     "durability": {
         "name": "🛡️ Прочность",
@@ -120,9 +133,10 @@ COMBAT_PROPERTIES = {
             8: {"value": 250, "rarity_weight": 40, "gs_value": 18},
             9: {"value": 500, "rarity_weight": 15, "gs_value": 24},
             10: {"value": -1, "rarity_weight": 3, "gs_value": 32},
-        }
+        },
+        "rarity_weight" : 1000
     },
-    "crit": {
+    GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE: {
         "name": "💥 Крит-удар",
         "description": "Шанс нанести критический удар и получить 2.5x награду",
         "tiers": {
@@ -136,9 +150,10 @@ COMBAT_PROPERTIES = {
             8: {"value": 0.47, "rarity_weight": 40, "gs_value": 18},
             9: {"value": 0.62, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 0.80, "rarity_weight": 3, "gs_value": 32},
-        }
+        },
+        "rarity_weight" : 800
     },
-    "power": {
+    GlobalKeyWords.ROD_POWER_INCREASE: {
         "name": "💪 Мощь",
         "description": "Увеличивает урон удочки процентно",
         "tiers": {
@@ -152,23 +167,25 @@ COMBAT_PROPERTIES = {
             8: {"value": 4.6, "rarity_weight": 40, "gs_value": 18},
             9: {"value": 5.7, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 7.2, "rarity_weight": 3, "gs_value": 32},
-        }
+        },
+        "rarity_weight" : 500
     },
     "piercing": {
         "name": "🔓 Пробивание",
         "description": "Увеличивает порог автоловки слабых рыб на X HP",
         "tiers": {
-            1: {"value": 0, "rarity_weight": 1000, "gs_value": 1},
-            2: {"value": 1, "rarity_weight": 800, "gs_value": 2},
-            3: {"value": 2, "rarity_weight": 600, "gs_value": 4},
-            4: {"value": 3, "rarity_weight": 400, "gs_value": 6},
-            5: {"value": 5, "rarity_weight": 250, "gs_value": 8},
-            6: {"value": 8, "rarity_weight": 150, "gs_value": 10},
-            7: {"value": 12, "rarity_weight": 80, "gs_value": 14},
-            8: {"value": 18, "rarity_weight": 40, "gs_value": 18},
+            1: {"value": 2, "rarity_weight": 1000, "gs_value": 1},
+            2: {"value": 3, "rarity_weight": 800, "gs_value": 2},
+            3: {"value": 4, "rarity_weight": 600, "gs_value": 4},
+            4: {"value": 6, "rarity_weight": 400, "gs_value": 6},
+            5: {"value": 8, "rarity_weight": 250, "gs_value": 8},
+            6: {"value": 11, "rarity_weight": 150, "gs_value": 10},
+            7: {"value": 15, "rarity_weight": 80, "gs_value": 14},
+            8: {"value": 20, "rarity_weight": 40, "gs_value": 18},
             9: {"value": 25, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 35, "rarity_weight": 3, "gs_value": 32},
-        }
+        },
+        "rarity_weight" : 1000
     },
 }
 
@@ -352,8 +369,8 @@ ROD_PROPERTY_GS = {
     'luck': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
     'speed': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
     'durability': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
-    'crit': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
-    'power': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
+    GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
+    GlobalKeyWords.ROD_POWER_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
     'piercing': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32}
 }
 

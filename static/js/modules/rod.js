@@ -27,11 +27,11 @@ const RodManager = {
                 return `x${value.toFixed(1)}`;
             case 'luck':
             case 'speed':
-            case 'crit':
+            case 'rod_crit_chance_increase':
                 return `+${(value * 100).toFixed(0)}%`;
             case 'durability':
                 return value === -1 ? '∞' : `${value} раз`;
-            case 'power':
+            case 'rod_power_increase':
                 return `x${value.toFixed(1)}`;
             case 'piercing':
                 return `+${value}`;
@@ -51,9 +51,9 @@ const RodManager = {
         
         // Применяем множитель power если он есть
         let powerMult = 1.0;
-        if ('power' in properties) {
-            const tier = properties['power'];
-            powerMult = window.ROD_PROPERTY_VALUES['power']?.[tier] || 1.0;
+        if ('rod_power_increase' in properties) {
+            const tier = properties['rod_power_increase'];
+            powerMult = window.ROD_PROPERTY_VALUES['rod_power_increase']?.[tier] || 1.0;
         }
         
         const effectiveMin = Math.round(minDamage * powerMult);
@@ -63,7 +63,7 @@ const RodManager = {
             rodName: rod.name,
             minDamage,
             maxDamage,
-            powerTier: properties['power'] || 'нет',
+            powerTier: properties['rod_power_increase'] || 'нет',
             powerMult,
             effectiveMin,
             effectiveMax
@@ -91,7 +91,7 @@ const RodManager = {
         let propertiesHTML = '';
         if (Object.keys(properties).length > 0) {
             propertiesHTML = '<div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 8px;">';
-            const propOrder = ['reward', 'xp', 'luck', 'speed', 'power', 'piercing', 'crit'];
+            const propOrder = ['reward', 'xp', 'luck', 'speed', 'rod_power_increase', 'piercing', 'rod_crit_chance_increase'];
             
             for (const propName of propOrder) {
                 if (propName in properties) {

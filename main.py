@@ -355,9 +355,15 @@ async def upgrade_rod(payload: dict):
             if isinstance(properties, str):
                 import json
                 properties = json.loads(properties)
-            if isinstance(properties, dict) and 'power' in properties:
-                tier = properties['power']
-                power_values = {1: 1.05, 2: 1.1, 3: 1.2, 4: 1.3, 5: 1.5, 6: 1.7, 7: 2.0, 8: 2.5, 9: 3.0, 10: 4.0}
+            if isinstance(properties, dict) and config.GlobalKeyWords.ROD_POWER_INCREASE in properties:
+                tier = properties[config.GlobalKeyWords.ROD_POWER_INCREASE]
+                power_values = {tier: tier_data["value"] for tier, tier_data in config.ROD_PROPERTIES[config.GlobalKeyWords.ROD_POWER_INCREASE]["tiers"].items()}
+            # if isinstance(properties, dict) and 'rod_power_increase' in properties:
+                # tier = properties['rod_power_increase']
+                # power_values = {tier: tier_data["value"] for tier, tier_data in config.ROD_PROPERTIES["rod_power_increase"]["tiers"].items()}
+                print(power_values)
+                
+                # power_values = {1: 1.05, 2: 1.1, 3: 1.2, 4: 1.3, 5: 1.5, 6: 1.7, 7: 2.0, 8: 2.5, 9: 3.0, 10: 4.0}
                 power = power_values.get(tier, 1.0)
         
         damage_min = int(min_damage * power)
