@@ -34,3 +34,9 @@ uvicorn main:app  --port 5000
 - [ ] Увеличить кнопку "Забросить удочку"
   ```html
   <button id="fish-btn" class="main-btn">Забросить удочку</button>
+
+## Идеи для аффиксов
+- [ ] 
+- [ ] 
+- [ ] 
+- [ ] 
