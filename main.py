@@ -425,5 +425,6 @@ async def get_achievements(payload: dict):
 async def get_leaderboard():
     return {
         "by_balance": database.get_top_by_balance(),
-        "by_catch": database.get_top_by_catch()
+        "by_catch": database.get_top_by_catch(),
+        "by_max_catch": database.get_top_by_max_catch()
     }

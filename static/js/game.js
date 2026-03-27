@@ -527,17 +527,52 @@ function toggleSideMenu() {
 // ЛИДЕРБОРД
 // ============================================================
 
-let leaderboardData = { by_balance: [], by_catch: [] };
+let leaderboardData = { by_balance: [], by_catch: [], by_max_catch: [] };
 
 async function openLeaderboard() {
     try {
         leaderboardData = await API.getLeaderboard();
-        LeaderboardManager.renderLeaderboard('by_balance', leaderboardData, UI_ELEMENTS.leadList);
+        ensureLeaderboardTabs();
+        LeaderboardManager.renderLeaderboard(getActiveLeaderboardType(), leaderboardData, UI_ELEMENTS.leadList);
         UIManager.showModal(UI_ELEMENTS.leadModal);
         setupLeaderboardTabs();
     } catch (e) {
         Log.error(`Ошибка загрузки лидерборда: ${e.message}`);
     }
+}
+
+function ensureLeaderboardTabs() {
+    const tabsContainer = UI_ELEMENTS.leadModal?.querySelector('.tabs');
+    if (!tabsContainer) return;
+
+    const balanceTab = tabsContainer.querySelector('[data-tab="balance"]');
+    const catchTab = tabsContainer.querySelector('[data-tab="catch"]');
+    let maxCatchTab = tabsContainer.querySelector('[data-tab="max-catch"]');
+
+    if (balanceTab) balanceTab.textContent = '💰 Богачи';
+    if (catchTab) catchTab.textContent = '🎣 Рыбы';
+
+    if (!maxCatchTab) {
+        maxCatchTab = document.createElement('button');
+        maxCatchTab.className = 'tab-btn';
+        maxCatchTab.dataset.tab = 'max-catch';
+        maxCatchTab.textContent = '🐟 Максимальный улов';
+        tabsContainer.appendChild(maxCatchTab);
+    }
+}
+
+function getLeaderboardTypeByTab(tabName) {
+    const typeMap = {
+        balance: 'by_balance',
+        catch: 'by_catch',
+        'max-catch': 'by_max_catch'
+    };
+    return typeMap[tabName] || 'by_balance';
+}
+
+function getActiveLeaderboardType() {
+    const activeTab = UI_ELEMENTS.leadModal?.querySelector('.tabs .tab-btn.active');
+    return getLeaderboardTypeByTab(activeTab?.dataset.tab);
 }
 
 function setupLeaderboardTabs() {
@@ -547,7 +582,7 @@ function setupLeaderboardTabs() {
             tabs.forEach(t => UIManager.removeClass(t, 'active'));
             UIManager.addClass(tab, 'active');
             
-            const type = tab.dataset.tab === 'balance' ? 'by_balance' : 'by_catch';
+            const type = getLeaderboardTypeByTab(tab.dataset.tab);
             LeaderboardManager.renderLeaderboard(type, leaderboardData, UI_ELEMENTS.leadList);
         };
     });

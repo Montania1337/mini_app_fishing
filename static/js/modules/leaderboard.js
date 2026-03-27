@@ -15,8 +15,14 @@ const LeaderboardManager = {
         let html = '';
         data.forEach((player, index) => {
             const medal = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `${index + 1}.`));
-            const value = type === 'by_balance' ? `${player.balance.toLocaleString()} 💰` : `${player.total_caught} 🎣`;
-            
+            const balance = Number(player.balance ?? 0);
+            const totalCaught = Number(player.total_caught ?? 0);
+            const maxCatch = Number(player.max_catch ?? 0);
+            const value =
+                type === 'by_balance' ? `${balance.toLocaleString()} 💰` :
+                type === 'by_max_catch' ? `${maxCatch.toLocaleString()} 🐟` :
+                `${totalCaught.toLocaleString()} 🎣`;
+
             html += `
                 <div class="leader-item">
                     <div>

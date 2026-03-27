@@ -578,11 +578,20 @@ def get_top_by_catch(limit=10):
         # Предполагаем, что у тебя в таблице players есть поле max_catch
         # Если нет, его нужно добавить при инициализации БД
         cursor.execute('''
-            SELECT username, max_catch FROM players 
+            SELECT username, COALESCE(total_caught, 0) AS total_caught, COALESCE(max_catch, 0) AS max_catch FROM players
+            ORDER BY total_caught DESC LIMIT ?
+        ''', (limit,))
+        return [dict(row) for row in cursor.fetchall()]
+
+def get_top_by_max_catch(limit=10):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT username, COALESCE(max_catch, 0) AS max_catch FROM players
             ORDER BY max_catch DESC LIMIT ?
         ''', (limit,))
         return [dict(row) for row in cursor.fetchall()]
-    
+
 
 def update_max_catch(user_id, amount):
     with get_connection() as conn:
