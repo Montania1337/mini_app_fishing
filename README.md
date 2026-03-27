@@ -36,7 +36,7 @@ uvicorn main:app  --port 5000
   <button id="fish-btn" class="main-btn">Забросить удочку</button>
 
 ## Идеи для аффиксов
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
+- [ ] placeholder
+- [ ] placeholder
+- [ ] placeholder
+- [ ] placeholder
