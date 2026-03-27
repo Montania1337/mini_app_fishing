@@ -1,6 +1,6 @@
 import random
 import json
-from app.config import FISHES, RARITIES, ROD_PROPERTIES, FISHING_ROD_BASES, FISHING_ROD_BASES_WEIGHTS, ACHIEVEMENT_RULES, ROD_NAMES, FISH_PREFIXES, FISH_SUFFIXES, ACHIEVEMENTS_LIST
+from app.config import GlobalKeyWords, FISHES, RARITIES, ROD_PROPERTIES, FISHING_ROD_BASES, FISHING_ROD_BASES_WEIGHTS, ACHIEVEMENT_RULES, ROD_NAMES, FISH_PREFIXES, FISH_SUFFIXES, ACHIEVEMENTS_LIST
 from app import database
 
 def weighted_choice(items):
@@ -139,17 +139,17 @@ def catch_fish_logic(rod: dict):
     reward_mult = 1.0
     crit_chance = 0.0
     
-    if 'luck' in properties:
-        tier = properties['luck']
-        luck_bonus = ROD_PROPERTIES['luck']['tiers'][tier]['value']
+    if GlobalKeyWords.ROD_LUCK_INCREASE in properties:
+        tier = properties[GlobalKeyWords.ROD_LUCK_INCREASE]
+        luck_bonus = ROD_PROPERTIES[GlobalKeyWords.ROD_LUCK_INCREASE]['tiers'][tier]['value']
     
-    if 'reward' in properties:
-        tier = properties['reward']
-        reward_mult = ROD_PROPERTIES['reward']['tiers'][tier]['value']
+    if GlobalKeyWords.ROD_REWARD_INCREASE in properties:
+        tier = properties[GlobalKeyWords.ROD_REWARD_INCREASE]
+        reward_mult = ROD_PROPERTIES[GlobalKeyWords.ROD_REWARD_INCREASE]['tiers'][tier]['value']
 
-    if 'crit' in properties:
-        tier = properties['crit']
-        crit_chance = ROD_PROPERTIES['crit']['tiers'][tier]['value']
+    if GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE in properties:
+        tier = properties[GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE]
+        crit_chance = ROD_PROPERTIES[GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE]['tiers'][tier]['value']
     
     # MARK: мы думали что это слои рандома, но мы поняли что тут происходит и это "немножко странно" (с) Миша
     pool = []
@@ -213,10 +213,10 @@ def catch_fish_logic(rod: dict):
     
     # Учитываем power множитель в среднем урону
     power_mult = 1.0
-    if 'power' in properties:
+    if GlobalKeyWords.ROD_POWER_INCREASE in properties:
         try:
-            tier = int(properties['power'])
-            power_mult = ROD_PROPERTIES['power']['tiers'][tier]['value']
+            tier = int(properties[GlobalKeyWords.ROD_POWER_INCREASE])
+            power_mult = ROD_PROPERTIES[GlobalKeyWords.ROD_POWER_INCREASE]['tiers'][tier]['value']
         except (ValueError, KeyError, TypeError):
             power_mult = 1.0
     
@@ -362,10 +362,10 @@ def calculate_strike_damage(rod: dict):
         
         # MARK: КАКОВА ХУЙЯ крит вообще так нахуй работает что это блять
         crit_bonus = 1
-        if 'crit' in properties:
+        if GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE in properties:
             try:
-                tier = int(properties['crit'])
-                tier_data = ROD_PROPERTIES['crit']['tiers'].get(tier, {})
+                tier = int(properties[GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE])
+                tier_data = ROD_PROPERTIES[GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE]['tiers'].get(tier, {})
                 crit_chance = tier_data.get('value', 0.0)
                 if random.random() < crit_chance:
                     # crit_bonus = random.randint(1, 3) 
@@ -374,17 +374,17 @@ def calculate_strike_damage(rod: dict):
                     # ИЛИ ПРОСТО БРАТЬ КРИТ МУЛЬТИ ОТ ТИРА ТОЖЕ, 
                     # НО БУДЕТ ДАБЛ ДИП И БУДЕТ УЖЕ ПИЗДЕЦ МОЩНОЕ СВОЙСТВ
             except (ValueError, KeyError, TypeError) as e:
-                print(f"Ошибка при обработке crit в damage: {e}")
+                print(f"Ошибка при обработке " +GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE + " в damage: {e}")
         
         
         power_mult = 1.0
-        if 'power' in properties:
+        if GlobalKeyWords.ROD_POWER_INCREASE in properties:
             try:
-                tier = int(properties['power'])
-                tier_data = ROD_PROPERTIES['power']['tiers'].get(tier, {})
+                tier = int(properties[GlobalKeyWords.ROD_POWER_INCREASE])
+                tier_data = ROD_PROPERTIES[GlobalKeyWords.ROD_POWER_INCREASE]['tiers'].get(tier, {})
                 power_mult = tier_data.get('value', 1.0)
             except (ValueError, KeyError, TypeError) as e:
-                print(f"Ошибка при обработке power в damage: {e}")
+                print(f"Ошибка при обработке " + GlobalKeyWords.ROD_POWER_INCREASE + " в damage: {e}")
         
         # damage = int(base_damage * reward_mult * power_mult) + crit_bonus
         damage = int(base_damage * power_mult * crit_bonus)
