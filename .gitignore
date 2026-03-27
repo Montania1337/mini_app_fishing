@@ -52,3 +52,4 @@ ehthumbs*.db
 $RECYCLE.BIN/
 app/__pycache__/services.cpython-310.pyc
 app/__pycache__/config.cpython-310.pyc
+/app/__pycache__

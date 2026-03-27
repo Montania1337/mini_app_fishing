@@ -309,7 +309,8 @@ const UpgradeManager = {
                 try {
                     const loginData = await API.login();
                     GameState.rods = loginData.rods || [];
-                    GameState.activeRod = loginData.active_rod;
+                    GameState.activeRod = RodManager.resolveActiveRod(GameState.rods, loginData.active_rod || GameState.activeRod);
+                    RodManager.currentRods = GameState.rods;
                     
                     // Обновляем currentRod из свежих данных с сервера
                     const updatedRod = GameState.rods.find(r => r.id === this.currentRod.id);

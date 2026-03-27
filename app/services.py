@@ -264,6 +264,33 @@ def check_and_unlock_achievements(user_id: int):
     return new_unlocks
 
 
+def get_achievement_progress(stats: dict, achievement_key: str, target: int) -> dict:
+    safe_target = max(int(target or 1), 1)
+
+    if achievement_key == 'first_fish' or achievement_key.startswith('big_fish'):
+        current_value = int(stats.get('total_caught', 0) or 0)
+        unit = 'рыб'
+    elif achievement_key.startswith('rich_man'):
+        current_value = int(stats.get('balance', 0) or 0)
+        unit = 'монет'
+    elif achievement_key.startswith('collector'):
+        current_value = int(stats.get('rods_count', 0) or 0)
+        unit = 'удочек'
+    else:
+        current_value = 0
+        unit = ''
+
+    current_value = max(current_value, 0)
+    progress_percent = min(100, round((current_value / safe_target) * 100))
+
+    return {
+        "current": current_value,
+        "target": safe_target,
+        "percent": progress_percent,
+        "unit": unit
+    }
+
+
 def calculate_fish_hp(fish_data: dict, rod: dict):
     """
     Рассчитывает HP рыбы простой формулой:

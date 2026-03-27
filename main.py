@@ -226,6 +226,27 @@ async def delete_rod(payload: dict):
     database.delete_rod_db(user_id, rod_id)
     return {"success": True}
 
+@app.post("/api/delete-rods-below-gs")
+async def delete_rods_below_gs(payload: dict):
+    user_id = payload.get("id")
+    min_gear_score = payload.get("min_gear_score")
+
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Не указан user_id")
+    if min_gear_score is None:
+        raise HTTPException(status_code=400, detail="Не указан порог gear score")
+
+    try:
+        min_gear_score = int(min_gear_score)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Порог gear score должен быть числом")
+
+    if min_gear_score < 0:
+        raise HTTPException(status_code=400, detail="Порог gear score не может быть отрицательным")
+
+    deleted_count = database.delete_rods_below_gear_score_db(user_id, min_gear_score)
+    return {"success": True, "deleted_count": deleted_count, "min_gear_score": min_gear_score}
+
 
 @app.post("/api/auction/listings")
 async def get_auction_listings(payload: dict):
@@ -370,16 +391,27 @@ async def swap_rods(payload: dict):
 @app.post("/api/achievements")
 async def get_achievements(payload: dict):
     user_id = payload.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Не указан user_id")
+
     unlocked = database.get_unlocked_achievements(user_id)
+    stats = database.get_player_stats(user_id)
+    rods = database.get_user_rods(user_id)
+    stats['rods_count'] = len(rods)
     
     # Собираем список для фронтенда
     result = []
     for key, info in config.ACHIEVEMENTS_LIST.items():
+        progress = services.get_achievement_progress(stats, key, info.get("target", 1))
         result.append({
             "key": key,
             "name": info["name"],
             "desc": info["desc"],
-            "is_unlocked": key in unlocked
+            "is_unlocked": key in unlocked,
+            "progress_current": progress["current"],
+            "progress_target": progress["target"],
+            "progress_percent": progress["percent"],
+            "progress_unit": progress["unit"]
         })
     return result
 

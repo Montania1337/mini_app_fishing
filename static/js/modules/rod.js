@@ -6,6 +6,17 @@ const RodManager = {
     currentRods: [],
     activeRodId: null,
 
+    resolveActiveRod(rods = [], activeRod = null) {
+        if (activeRod?.id !== undefined && activeRod?.id !== null) {
+            const freshActiveRod = rods.find((rod) => rod.id === activeRod.id);
+            if (freshActiveRod) {
+                return freshActiveRod;
+            }
+        }
+
+        return rods.find((rod) => rod.is_active) || activeRod || null;
+    },
+
     formatPropertyValue(propName, tier) {
         const value = window.ROD_PROPERTY_VALUES[propName]?.[tier];
         if (value === undefined) return '';

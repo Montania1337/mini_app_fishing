@@ -569,6 +569,46 @@ def delete_rod_db(user_id: int, rod_id: int):
             return True
         return False
 
+def delete_rods_below_gear_score_db(user_id: int, min_gear_score: int) -> int:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            SELECT r.id
+            FROM rods r
+            LEFT JOIN auction_listings al
+                ON al.rod_id = r.id AND al.is_active = 1
+            WHERE r.user_id = ?
+              AND COALESCE(r.gear_score, 0) < ?
+              AND COALESCE(r.is_active, 0) = 0
+              AND al.id IS NULL
+            ORDER BY COALESCE(r.position, r.id)
+        ''', (user_id, min_gear_score))
+        rod_ids_to_delete = [row['id'] for row in cursor.fetchall()]
+
+        if not rod_ids_to_delete:
+            return 0
+
+        placeholders = ','.join('?' for _ in rod_ids_to_delete)
+        cursor.execute(
+            f"DELETE FROM rods WHERE user_id = ? AND id IN ({placeholders})",
+            (user_id, *rod_ids_to_delete)
+        )
+
+        cursor.execute('''
+            SELECT id
+            FROM rods
+            WHERE user_id = ?
+            ORDER BY COALESCE(position, id)
+        ''', (user_id,))
+        remaining_rod_ids = [row['id'] for row in cursor.fetchall()]
+
+        for idx, rod_id in enumerate(remaining_rod_ids):
+            cursor.execute("UPDATE rods SET position = ? WHERE id = ?", (idx, rod_id))
+
+        conn.commit()
+        return len(rod_ids_to_delete)
+
 def swap_rods_by_index(user_id: int, from_index: int, to_index: int):
     """Меняет местами удочки в инвентаре по индексам"""
     with get_connection() as conn:

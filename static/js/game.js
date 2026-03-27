@@ -37,6 +37,10 @@ const UI_ELEMENTS = {
     closeModal: document.getElementById('close-modal'),
     invGrid: document.getElementById('inventory-grid'),
     buyBtnModal: document.getElementById('buy-btn-modal'),
+    inventoryToolsToggle: document.getElementById('inventory-tools-toggle'),
+    inventoryToolsPanel: document.getElementById('inventory-tools-panel'),
+    autoDeleteGsInput: document.getElementById('auto-delete-gs-input'),
+    autoDeleteGsBtn: document.getElementById('auto-delete-gs-btn'),
     priceTag: document.getElementById('price-tag'),
     sidebarToggle: document.getElementById('sidebar-toggle'),
     sideMenu: document.getElementById('side-menu'),
@@ -95,7 +99,7 @@ async function initializeGame() {
         const data = await API.login();
         GameState.balance = data.balance;
         GameState.rods = data.rods || [];
-        GameState.activeRod = data.active_rod || null;
+        GameState.activeRod = RodManager.resolveActiveRod(GameState.rods, data.active_rod || null);
         RodManager.currentRods = GameState.rods;
         
         // Обновляем UI
@@ -106,7 +110,7 @@ async function initializeGame() {
         }
         
         // Инициализируем модули
-        GameState.activeRod = GameState.rods.find(r => r.is_active);
+        GameState.activeRod = RodManager.resolveActiveRod(GameState.rods, GameState.activeRod);
         RodManager.currentRods = GameState.rods;
         
         if (GameState.activeRod) {
@@ -230,12 +234,12 @@ function syncActiveRodState(fishData) {
 }
 
 function setupStrikeListener(fishData) {
-    const strikeArea = document.getElementById('strike-area');
-    if (!strikeArea) return;
+    const combatContainer = UI_ELEMENTS.combatScreen?.querySelector('.combat-container');
+    if (!combatContainer) return;
 
     const handleStrike = async (e) => {
-        strikeArea.removeEventListener('click', handleStrike);
-        strikeArea.style.pointerEvents = 'none';
+        combatContainer.removeEventListener('click', handleStrike);
+        combatContainer.style.pointerEvents = 'none';
 
         try {
             const combatData = await API.strikeFish();
@@ -256,18 +260,18 @@ function setupStrikeListener(fishData) {
                 CombatManager.showVictory(combatData, UI_ELEMENTS);
             } else {
                 // Продолжаем слушать удары
-                strikeArea.style.pointerEvents = 'auto';
-                strikeArea.addEventListener('click', handleStrike);
+                combatContainer.style.pointerEvents = 'auto';
+                combatContainer.addEventListener('click', handleStrike);
             }
         } catch (e) {
             Log.error(`Ошибка удара: ${e.message}`);
-            strikeArea.style.pointerEvents = 'auto';
-            strikeArea.addEventListener('click', handleStrike);
+            combatContainer.style.pointerEvents = 'auto';
+            combatContainer.addEventListener('click', handleStrike);
         }
     };
 
-    strikeArea.style.pointerEvents = 'auto';
-    strikeArea.addEventListener('click', handleStrike);
+    combatContainer.style.pointerEvents = 'auto';
+    combatContainer.addEventListener('click', handleStrike);
 }
 
 // ============================================================
@@ -278,6 +282,8 @@ async function refreshInventory() {
     try {
         const data = await API.login();
         GameState.rods = data.rods || [];
+        GameState.activeRod = RodManager.resolveActiveRod(GameState.rods, data.active_rod || GameState.activeRod);
+        RodManager.currentRods = GameState.rods;
         InventoryManager.renderInventoryGrid(GameState.rods, UI_ELEMENTS.invGrid);
         RodManager.renderRodInfo(GameState.activeRod, UI_ELEMENTS.rodInfo);
     } catch (e) {
@@ -389,6 +395,74 @@ async function buyRod() {
 // ДОСТИЖЕНИЯ
 // ============================================================
 
+async function autoDeleteRodsByGearScore() {
+    const thresholdValue = UI_ELEMENTS.autoDeleteGsInput?.value?.trim();
+
+    if (!thresholdValue) {
+        Log.warning('Укажите порог Gear Score для автоудаления.');
+        UI_ELEMENTS.autoDeleteGsInput?.focus();
+        return;
+    }
+
+    const minGearScore = Number.parseInt(thresholdValue, 10);
+    if (!Number.isInteger(minGearScore) || minGearScore < 0) {
+        Log.error('Порог Gear Score должен быть целым числом от 0.');
+        UI_ELEMENTS.autoDeleteGsInput?.focus();
+        return;
+    }
+
+    const rodsToDelete = GameState.rods.filter((rod) => {
+        const gearScore = Number(rod.gear_score ?? 0);
+        return !rod.is_active && gearScore < minGearScore;
+    });
+
+    if (rodsToDelete.length === 0) {
+        Log.warning(`Нет удочек с Gear Score ниже ${minGearScore} для удаления.`);
+        return;
+    }
+
+    const isConfirmed = window.confirm(
+        `Удалить ${rodsToDelete.length} удочек с Gear Score ниже ${minGearScore}? Активная удочка не будет затронута.`
+    );
+    if (!isConfirmed) {
+        return;
+    }
+
+    try {
+        if (UI_ELEMENTS.autoDeleteGsBtn) {
+            UI_ELEMENTS.autoDeleteGsBtn.disabled = true;
+        }
+
+        const result = await API.deleteRodsBelowGearScore(minGearScore);
+        await refreshInventory();
+
+        if (result.deleted_count > 0) {
+            Log.success(`Удалено удочек: ${result.deleted_count} (GS < ${minGearScore}).`);
+        } else {
+            Log.warning(`Удалять нечего: удочек с GS ниже ${minGearScore} не найдено.`);
+        }
+    } catch (e) {
+        Log.error(`Ошибка автоудаления: ${e.message}`);
+    } finally {
+        if (UI_ELEMENTS.autoDeleteGsBtn) {
+            UI_ELEMENTS.autoDeleteGsBtn.disabled = false;
+        }
+    }
+}
+
+function setInventoryToolsOpen(isOpen) {
+    if (!UI_ELEMENTS.inventoryToolsPanel || !UI_ELEMENTS.inventoryToolsToggle) return;
+
+    UI_ELEMENTS.inventoryToolsPanel.classList.toggle('is-open', isOpen);
+    UI_ELEMENTS.inventoryToolsPanel.setAttribute('aria-hidden', String(!isOpen));
+    UI_ELEMENTS.inventoryToolsToggle.setAttribute('aria-expanded', String(isOpen));
+}
+
+function toggleInventoryToolsPanel() {
+    const isOpen = UI_ELEMENTS.inventoryToolsToggle?.getAttribute('aria-expanded') === 'true';
+    setInventoryToolsOpen(!isOpen);
+}
+
 async function openAchievements() {
     try {
         const achievements = await API.getAchievements();
@@ -494,6 +568,7 @@ function initializeEventHandlers() {
         UI_ELEMENTS.invBtn.onclick = () => {
             closeSideMenu();
             UIManager.showModal(UI_ELEMENTS.modal);
+            setInventoryToolsOpen(false);
             refreshInventory();
         };
     }
@@ -508,6 +583,7 @@ function initializeEventHandlers() {
     if (UI_ELEMENTS.closeModal) {
         UI_ELEMENTS.closeModal.onclick = () => {
             UIManager.hideModal(UI_ELEMENTS.modal);
+            setInventoryToolsOpen(false);
             TooltipManager.hide();
             TooltipManager.hideContextMenu();
         };
@@ -516,6 +592,22 @@ function initializeEventHandlers() {
     // Покупка
     if (UI_ELEMENTS.buyBtnModal) {
         UI_ELEMENTS.buyBtnModal.onclick = buyRod;
+    }
+
+    if (UI_ELEMENTS.inventoryToolsToggle) {
+        UI_ELEMENTS.inventoryToolsToggle.onclick = toggleInventoryToolsPanel;
+    }
+
+    if (UI_ELEMENTS.autoDeleteGsBtn) {
+        UI_ELEMENTS.autoDeleteGsBtn.onclick = autoDeleteRodsByGearScore;
+    }
+
+    if (UI_ELEMENTS.autoDeleteGsInput) {
+        UI_ELEMENTS.autoDeleteGsInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                autoDeleteRodsByGearScore();
+            }
+        });
     }
 
     if (UI_ELEMENTS.closeAuctionModal) {

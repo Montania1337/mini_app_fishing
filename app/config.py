@@ -361,14 +361,45 @@ ROD_PROPERTY_GS = {
 
 ACHIEVEMENTS_LIST = {
     "first_fish": {"name": "Первый улов", "desc": "Поймайте свою первую рыбу", "target": 1},
+
+
     "big_fish": {"name": "Рыболов-любитель", "desc": "Поймайте 50 рыб", "target": 50},
+    "big_fish 1": {"name": "Рыболов-нормис", "desc": "Поймайте 500 рыб", "target": 500},
+    "big_fish 2": {"name": "Рыболов-эксперт", "desc": "Поймайте 1000 рыб", "target": 1000},
+    "big_fish 3": {"name": "Рыболов-мастер", "desc": "Поймайте 5000 рыб", "target": 5000},
+    "big_fish 4": {"name": "Рыболов-грандмастер", "desc": "Поймайте 25000 рыб", "target": 25000},
+    "big_fish 5": {"name": "Рыболов-претендент", "desc": "Поймайте 100000 рыб", "target": 100000},
+
+
     "rich_man": {"name": "Богатей", "desc": "Накопите 1000 монет", "target": 1000},
+    "rich_man 2": {"name": "Богатей 2", "desc": "Накопите 5000 монет", "target": 5000},
+    "rich_man 3": {"name": "Богатей 3", "desc": "Накопите 10.000 монет", "target": 25000},
+    "rich_man 4": {"name": "Богатей 4", "desc": "Накопите 100.000 монет", "target": 100000},
+    "rich_man 5": {"name": "Богатей 5", "desc": "Накопите 1.000.000 монет", "target": 1000000},
+
+
+
     "collector": {"name": "Коллекционер", "desc": "Владейте 5 удочками", "target": 5}
 }
 
 ACHIEVEMENT_RULES = {
     "first_fish": lambda stats: stats['total_caught'] >= 1,
-    "big_fish":   lambda stats: stats['total_caught'] >= 50,
+
+
+    "big_fish": lambda stats: stats['total_caught'] >= 50,
+    "big_fish 1": lambda stats: stats['total_caught'] >= 500,
+    "big_fish 2": lambda stats: stats['total_caught'] >= 1000,
+    "big_fish 3": lambda stats: stats['total_caught'] >= 5000,
+    "big_fish 4": lambda stats: stats['total_caught'] >= 25000,
+    "big_fish 5": lambda stats: stats['total_caught'] >= 100000,
+
     "rich_man":   lambda stats: stats['balance'] >= 1000,
+    "rich_man 2": lambda stats: stats['balance'] >= 5000,
+    "rich_man 3": lambda stats: stats['balance'] >= 25000,
+    "rich_man 4": lambda stats: stats['balance'] >= 100000,
+    "rich_man 5": lambda stats: stats['balance'] >= 1000000,
+
+
+
     "collector":  lambda stats: stats['rods_count'] >= 5,
 }

@@ -60,10 +60,7 @@
                 </div>
                 
                 <div class="combat-action">
-                    <div class="strike-area" id="strike-area">
-                        <div class="strike-text">Кликните для удара!</div>
-                        <div class="strike-hint">👊 Удар</div>
-                    </div>
+                    <div class="strike-text">Кликните для удара!</div>
                 </div>
                 
                 <div id="combat-damage-display" class="damage-display hidden">
@@ -160,7 +157,24 @@
         </div>
 
         <div class="inventory-section">
-            <h4>Ваши удочки:</h4>
+            <div class="inventory-section-header">
+                <h4>Ваши удочки:</h4>
+                <button id="inventory-tools-toggle" class="secondary-btn inventory-tools-toggle" type="button" aria-expanded="false" aria-controls="inventory-tools-panel">
+                    Автоудаление
+                    <span class="inventory-tools-toggle-icon">▾</span>
+                </button>
+            </div>
+            <div id="inventory-tools-panel" class="inventory-tools-panel" aria-hidden="true">
+                <div class="inventory-actions">
+                    <label class="inventory-gs-filter" for="auto-delete-gs-input">
+                        <span>Автоудаление &lt; GS</span>
+                        <input id="auto-delete-gs-input" class="inventory-gs-input" type="number" min="0" step="1" placeholder="Например, 150">
+                    </label>
+                    <button id="auto-delete-gs-btn" class="secondary-btn inventory-auto-delete-btn">
+                        Автоудалить
+                    </button>
+                </div>
+            </div>
             <div id="inventory-grid" class="inventory-grid">
                 <!-- Сеточный инвентарь -->
             </div>

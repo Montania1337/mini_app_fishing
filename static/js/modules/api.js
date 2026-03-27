@@ -65,6 +65,10 @@ const API = {
         return this.request('delete-rod', { rod_id: rodId });
     },
 
+    deleteRodsBelowGearScore(minGearScore) {
+        return this.request('delete-rods-below-gs', { min_gear_score: minGearScore });
+    },
+
     swapRods(fromIndex, toIndex) {
         return this.request('swap-rods', { from_index: fromIndex, to_index: toIndex });
     },

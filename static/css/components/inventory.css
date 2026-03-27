@@ -32,6 +32,102 @@
     pointer-events: none;
 }
 
+.inventory-actions {
+    display: flex;
+    align-items: end;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.inventory-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.inventory-section-header h4 {
+    margin: 0;
+}
+
+.inventory-tools-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 14px;
+}
+
+.inventory-tools-toggle-icon {
+    display: inline-block;
+    transition: transform 0.18s ease;
+}
+
+.inventory-tools-toggle[aria-expanded="true"] .inventory-tools-toggle-icon {
+    transform: rotate(180deg);
+}
+
+.inventory-tools-panel {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: max-height 0.24s ease, opacity 0.18s ease, transform 0.18s ease, margin-bottom 0.24s ease;
+    margin-bottom: 0;
+}
+
+.inventory-tools-panel.is-open {
+    max-height: 140px;
+    opacity: 1;
+    transform: translateY(0);
+    margin-bottom: 10px;
+}
+
+.inventory-gs-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 220px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.inventory-gs-input {
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(12, 14, 24, 0.9);
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.inventory-gs-input:focus {
+    border-color: rgba(0, 122, 255, 0.65);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.18);
+}
+
+.inventory-auto-delete-btn {
+    min-width: 170px;
+    background: linear-gradient(135deg, rgba(255, 99, 71, 0.95) 0%, rgba(214, 48, 49, 0.92) 100%);
+    border-color: rgba(255, 99, 71, 0.5);
+    color: #fff;
+}
+
+.inventory-auto-delete-btn:hover:not(:disabled) {
+    box-shadow: 0 10px 20px rgba(214, 48, 49, 0.22);
+}
+
+.inventory-auto-delete-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
 .inventory-slot {
     aspect-ratio: 1;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
@@ -186,6 +282,72 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.achievement-card {
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+}
+
+.achievement-card.locked {
+    opacity: 0.82;
+}
+
+.achievement-icon {
+    flex: 0 0 auto;
+    font-size: 1.6rem;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.achievement-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.achievement-name {
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.94);
+}
+
+.achievement-desc {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.62);
+    margin-top: 4px;
+}
+
+.achievement-progress-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.achievement-progress-track {
+    width: 100%;
+    height: 9px;
+    margin-top: 6px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.achievement-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #46c2ff 0%, #8bff8f 100%);
+    box-shadow: 0 0 10px rgba(70, 194, 255, 0.24);
+    transition: width 0.25s ease;
+}
+
+.achievement-card:not(.locked) .achievement-progress-fill {
+    background: linear-gradient(90deg, #f6c453 0%, #ffd86b 100%);
+    box-shadow: 0 0 12px rgba(246, 196, 83, 0.28);
 }
 
 .active-rod-highlight {
