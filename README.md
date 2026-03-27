@@ -11,6 +11,9 @@ uvicorn main:app  --port 5000
   - `catch_fish_logic`
   - `generate_random_rod`
   - `calculate_strike_damage`
+- [ ] Улучшить бой с рыбой:
+  - Добавить таймер на бой
+  - Кнопку выхода из боя
 
 ## Средний приоритет
 - [ ] Сделать комиссию на аукционе
