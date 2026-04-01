@@ -15,7 +15,7 @@ ROD_PRICE = 1
 INVENTORY_SIZE = 20  # Максимальное количество удочек в инвентаре (3 ряда по 4)
 
 
-class GlobalKeyWords(str, Enum):
+class RodKeyWords(str, Enum):
     ROD_POWER_INCREASE = "rod_power_increase"
     ROD_CRIT_CHANCE_INCREASE = "rod_crit_chance_increase"
     ROD_CRIT_DAMAGE_INCREASE = "rod_crit_damage_increase"
@@ -52,7 +52,7 @@ RARITIES = {
 
 # Свойства для увеличения дохода
 INCOME_PROPERTIES = {
-    GlobalKeyWords.ROD_REWARD_INCREASE: {
+    RodKeyWords.ROD_REWARD_INCREASE: {
         "name": "💰 Множитель награды",
         "description": "Увеличивает количество монет, получаемых за улов",
         "tiers": {
@@ -90,7 +90,7 @@ INCOME_PROPERTIES = {
 
 # Боевые свойства
 COMBAT_PROPERTIES = {
-    GlobalKeyWords.ROD_LUCK_INCREASE: {
+    RodKeyWords.ROD_LUCK_INCREASE: {
         "name": "🍀 Удача (Редкое)",
         "description": "Повышает шанс поймать рыбу редкой редкости",
         "tiers": {
@@ -124,7 +124,7 @@ COMBAT_PROPERTIES = {
         },
         "rarity_weight" : 0
     },
-    GlobalKeyWords.ROD_DURABILITY_INCREASE: {
+    RodKeyWords.ROD_DURABILITY_INCREASE: {
         "name": "🛡️ Прочность",
         "description": "Определяет, сколько раз можно использовать удочку перед поломкой",
         "tiers": {
@@ -141,7 +141,7 @@ COMBAT_PROPERTIES = {
         },
         "rarity_weight" : 1000
     },
-    GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE: {
+    RodKeyWords.ROD_CRIT_CHANCE_INCREASE: {
         "name": "💥 Крит-удар",
         "description": "Шанс нанести критический удар и получить 2.5x награду",
         "tiers": {
@@ -158,7 +158,7 @@ COMBAT_PROPERTIES = {
         },
         "rarity_weight" : 800
     },
-    GlobalKeyWords.ROD_POWER_INCREASE: {
+    RodKeyWords.ROD_POWER_INCREASE: {
         "name": "💪 Мощь",
         "description": "Увеличивает урон удочки процентно",
         "tiers": {
@@ -175,7 +175,7 @@ COMBAT_PROPERTIES = {
         },
         "rarity_weight" : 500
     },
-    GlobalKeyWords.ROD_PIERCING_INCREASE: {
+    RodKeyWords.ROD_PIERCING_INCREASE: {
         "name": "🔓 Пробивание",
         "description": "Увеличивает порог автоловки слабых рыб на X HP",
         "tiers": {
@@ -369,14 +369,14 @@ ROD_PROPERTY_VALUES = {
 
 # Gear Score значения (GS) для каждого тира каждого свойства
 ROD_PROPERTY_GS = {
-    GlobalKeyWords.ROD_REWARD_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
+    RodKeyWords.ROD_REWARD_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
     'xp': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
-    GlobalKeyWords.ROD_LUCK_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
+    RodKeyWords.ROD_LUCK_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
     'speed': {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
-    GlobalKeyWords.ROD_DURABILITY_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
-    GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
-    GlobalKeyWords.ROD_POWER_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
-    GlobalKeyWords.ROD_PIERCING_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32}
+    RodKeyWords.ROD_DURABILITY_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
+    RodKeyWords.ROD_CRIT_CHANCE_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
+    RodKeyWords.ROD_POWER_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32},
+    RodKeyWords.ROD_PIERCING_INCREASE: {1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 14, 8: 18, 9: 24, 10: 32}
 }
 
 

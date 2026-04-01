@@ -1,7 +1,7 @@
 import sqlite3
 import json
 from contextlib import contextmanager
-from app.config import GlobalKeyWords
+from app.config import RodKeyWords
 from typing import Optional, List, Dict
 
 from .config import DATABASE_DIR, DATABASE_FILE_PATH
@@ -142,11 +142,11 @@ def get_player(user_id: int, username: str) -> Dict:
 
 def rename_rod_properties_in_db() -> int:
     property_renames = {
-        "power": GlobalKeyWords.ROD_POWER_INCREASE,
-        "luck": GlobalKeyWords.ROD_LUCK_INCREASE,
-        "reward": GlobalKeyWords.ROD_REWARD_INCREASE,
-        "crit": GlobalKeyWords.ROD_CRIT_CHANCE_INCREASE,
-        "durability": GlobalKeyWords.ROD_DURABILITY_INCREASE
+        "power": RodKeyWords.ROD_POWER_INCREASE,
+        "luck": RodKeyWords.ROD_LUCK_INCREASE,
+        "reward": RodKeyWords.ROD_REWARD_INCREASE,
+        "crit": RodKeyWords.ROD_CRIT_CHANCE_INCREASE,
+        "durability": RodKeyWords.ROD_DURABILITY_INCREASE
     }
 
     with get_connection() as conn:
@@ -331,12 +331,16 @@ def reduce_durability(rod_id: int):
         # Decrease by 1 (one cast = 1 durability)
         new_durability = current_durability - 1
         
-        if new_durability <= 0:
+        if new_durability == 0:
             # Rod is broken, delete it
             cursor.execute("DELETE FROM rods WHERE id = ?", (rod_id,))
             conn.commit()
             return {"status": "broken", "durability": 0}
         
+        if new_durability < -1:
+            new_durability = -1
+        
+
         # Update durability in database
         cursor.execute("UPDATE rods SET durability = ? WHERE id = ?", (new_durability, rod_id))
         conn.commit()
