@@ -28,7 +28,7 @@ const TooltipManager = {
                 const name = window.ROD_PROPERTY_NAMES[prop] || prop;
                 
                 statsHTML += `
-                    <div class="tooltip-stat-item">
+                    <div class="tooltip-stat-item" data-tier="${tier}">
                         <div class="tooltip-stat-title">
                             <span>${name}</span>
                             <span class="tooltip-stat-value">${value}</span>
@@ -55,7 +55,7 @@ const TooltipManager = {
                     ⬆️ Улучшение: ${upgradeDisplay}
                 </div>
             </div>
-            <div class="tooltip-stats rarity-${rod.rarity}">
+            <div class="tooltip-stats">
                 <div class="tooltip-stat-header">Характеристики</div>
                 ${statsHTML}
             </div>

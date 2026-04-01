@@ -252,7 +252,7 @@ const AuctionManager = {
                     Редкость: ${this.escapeHtml(String(rarityLabel))} | Улучшение: +${this.escapeHtml(String(upgradeLevel))}
                 </div>
             </div>
-            <div class="tooltip-stats rarity-${this.escapeAttribute(rarityLabel)}">
+            <div class="tooltip-stats">
                 <div class="tooltip-stat-header">Характеристики</div>
                 ${propertiesHtml}
             </div>
@@ -468,7 +468,7 @@ const AuctionManager = {
             const desc = window.ROD_PROPERTY_DESCRIPTIONS?.[propName] || '';
 
             blocks.push(`
-                <div class="tooltip-stat-item">
+                <div class="tooltip-stat-item" data-tier="${this.escapeAttribute(String(tier))}">
                     <div class="tooltip-stat-title">
                         <span>${this.escapeHtml(name)}</span>
                         <span class="tooltip-stat-value">${this.escapeHtml(String(value))}</span>
