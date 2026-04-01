@@ -34,7 +34,7 @@ def generate_random_rod():
     
     available_props = list(ROD_PROPERTIES.keys())
     prop_weights = [ROD_PROPERTIES[p]["rarity_weight"] for p in available_props]
-    print(prop_weights)
+    # print(prop_weights)
 
 
     # selected_props = random.sample(available_props, properties_count)
@@ -50,7 +50,7 @@ def generate_random_rod():
         available_props.pop(idx)
         prop_weights.pop(idx)
 
-    print(f"Выбранные свойства: {selected_props}")
+    # print(f"Выбранные свойства: {selected_props}")
 
     properties = {}
     total_rarity_weight = 0
@@ -120,7 +120,7 @@ def generate_random_rod():
     #     max_damage = 15
     
     rod_name = random.choice(ROD_NAMES)
-    
+
     return {
         "name": rod_name,
         "rarity": rarity,
