@@ -67,7 +67,7 @@ INCOME_PROPERTIES = {
             9: {"value": 8.0, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 10.0, "rarity_weight": 3, "gs_value": 32},
         },
-        "rarity_weight" : 1000
+        "rarity_weight" : 300
     },
     "xp": {
         "name": "✨ Опыт",
@@ -105,7 +105,7 @@ COMBAT_PROPERTIES = {
             9: {"value": 1.7, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 2.3, "rarity_weight": 3, "gs_value": 32},
         },
-        "rarity_weight" : 1000
+        "rarity_weight" : 500
     },
     "speed": {
         "name": "⚡ Скорость",
@@ -139,7 +139,7 @@ COMBAT_PROPERTIES = {
             9: {"value": 500, "rarity_weight": 15, "gs_value": 24},
             10: {"value": -1, "rarity_weight": 3, "gs_value": 32},
         },
-        "rarity_weight" : 1000
+        "rarity_weight" : 1200
     },
     RodKeyWords.ROD_CRIT_CHANCE_INCREASE: {
         "name": "💥 Крит-удар",
@@ -173,7 +173,7 @@ COMBAT_PROPERTIES = {
             9: {"value": 5.7, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 7.2, "rarity_weight": 3, "gs_value": 32},
         },
-        "rarity_weight" : 500
+        "rarity_weight" : 1300
     },
     RodKeyWords.ROD_PIERCING_INCREASE: {
         "name": "🔓 Пробивание",

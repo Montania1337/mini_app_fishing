@@ -33,8 +33,25 @@ def generate_random_rod():
     )[0]
     
     available_props = list(ROD_PROPERTIES.keys())
-    selected_props = random.sample(available_props, properties_count)
+    prop_weights = [ROD_PROPERTIES[p]["rarity_weight"] for p in available_props]
+    print(prop_weights)
+
+
+    # selected_props = random.sample(available_props, properties_count)
+    selected_props = []
     
+    for _ in range(min(properties_count, len(available_props))):
+    # Выбираем одно свойство, используя наши веса
+        choice = random.choices(available_props, weights=prop_weights, k=1)[0]
+        selected_props.append(choice)
+        
+        # Удаляем выбранное свойство и его вес из временных списков
+        idx = available_props.index(choice)
+        available_props.pop(idx)
+        prop_weights.pop(idx)
+
+    print(f"Выбранные свойства: {selected_props}")
+
     properties = {}
     total_rarity_weight = 0
     gear_score = 0  
@@ -56,7 +73,7 @@ def generate_random_rod():
 
     # База генерируется отдельно от свойств, просто по весу.
     rods_weights = FISHING_ROD_BASES_WEIGHTS
-    fish_rod_base = random.choices(range(1, 6), weights=rods_weights)[0]
+    fish_rod_base = random.choices(range(1, FISHING_ROD_BASES.__len__() + 1), weights=rods_weights)[0]
 
     rarity = FISHING_ROD_BASES[fish_rod_base]["rarity"]
     durability_range = FISHING_ROD_BASES[fish_rod_base]["durabillity"]
