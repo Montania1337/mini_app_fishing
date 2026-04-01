@@ -24,7 +24,11 @@ const AchievementManager = {
         achievements.forEach((achievement) => {
             const lockedClass = achievement.is_unlocked ? '' : 'locked';
             const icon = achievement.is_unlocked ? '🏆' : '🔒';
-            const progressPercent = Number(achievement.progress_percent ?? 0);
+            let progressPercent = Number(achievement.progress_percent ?? 0);
+            
+            if (achievement.is_unlocked) {
+                progressPercent = 100; // Если достижение разблокировано, всегда показываем 100% прогресса
+            }
             const progressLabel = this.formatProgressLabel(achievement);
 
             html += `
