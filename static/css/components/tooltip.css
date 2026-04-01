@@ -60,32 +60,37 @@
 }
 
 .tooltip-stat-item {
+    --tooltip-tier-color: rgba(255, 255, 255, 0.2);
     background: rgba(0, 0, 0, 0.2);
     padding: 8px;
     border-radius: 8px;
-    border-left: 3px solid rgba(255, 255, 255, 0.2);
+    border-left: 3px solid var(--tooltip-tier-color);
 }
 
-/* Rarity-based borders */
-.tooltip-stats.rarity-common .tooltip-stat-item {
-    border-left-color: var(--rarity-common);
+.tooltip-stat-item[data-tier="1"],
+.tooltip-stat-item[data-tier="2"],
+.tooltip-stat-item[data-tier="3"] {
+    --tooltip-tier-color: rgba(255, 255, 255, 0.95);
 }
 
-.tooltip-stats.rarity-uncommon .tooltip-stat-item {
-    border-left-color: #5ac8fa;
+.tooltip-stat-item[data-tier="4"],
+.tooltip-stat-item[data-tier="5"]{
+    --tooltip-tier-color: #5663da;
+}
+.tooltip-stat-item[data-tier="6"],
+.tooltip-stat-item[data-tier="7"] {
+    --tooltip-tier-color: #cc11b3;
 }
 
-.tooltip-stats.rarity-rare .tooltip-stat-item {
-    border-left-color: var(--rarity-rare);
+.tooltip-stat-item[data-tier="8"],
+.tooltip-stat-item[data-tier="9"] {
+    --tooltip-tier-color: #ffd700;
 }
 
-.tooltip-stats.rarity-epic .tooltip-stat-item {
-    border-left-color: var(--rarity-epic);
+.tooltip-stat-item[data-tier="10"] {
+    --tooltip-tier-color: #ff4d4f;
 }
 
-.tooltip-stats.rarity-legendary .tooltip-stat-item {
-    border-left-color: var(--rarity-legendary);
-}
 
 .tooltip-stat-title {
     display: flex;
@@ -97,7 +102,7 @@
 }
 
 .tooltip-stat-value {
-    color: var(--accent-color);
+    color: var(--tooltip-tier-color, var(--accent-color));
     font-weight: 700;
     font-size: 0.95rem;
 }

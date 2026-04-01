@@ -108,8 +108,8 @@ const RodManager = {
             propertiesHTML += '</div>';
         }
 
-        const durabilityText = durability > 0 ? `${durability} забросов` : 'Сломана';
-        const durabilityColor = durability > 100 ? '#34c759' : (durability > 50 ? '#ff9500' : '#ff3b30');
+        const durabilityText = durability === -1 ? 'Вечная' : (durability > 0 ? `${durability} забросов` : 'Сломана');
+        const durabilityColor = durability === -1 ? '#8a2be2' : (durability > 100 ? '#34c759' : (durability > 50 ? '#ff9500' : '#ff3b30'));
 
         const html = `
             <div class="rod-name rarity-${rod.rarity}">${rod.name}</div>

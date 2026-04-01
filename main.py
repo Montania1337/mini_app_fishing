@@ -355,9 +355,9 @@ async def upgrade_rod(payload: dict):
             if isinstance(properties, str):
                 import json
                 properties = json.loads(properties)
-            if isinstance(properties, dict) and config.GlobalKeyWords.ROD_POWER_INCREASE in properties:
-                tier = properties[config.GlobalKeyWords.ROD_POWER_INCREASE]
-                power_values = {tier: tier_data["value"] for tier, tier_data in config.ROD_PROPERTIES[config.GlobalKeyWords.ROD_POWER_INCREASE]["tiers"].items()}
+            if isinstance(properties, dict) and config.RodKeyWords.ROD_POWER_INCREASE in properties:
+                tier = properties[config.RodKeyWords.ROD_POWER_INCREASE]
+                power_values = {tier: tier_data["value"] for tier, tier_data in config.ROD_PROPERTIES[config.RodKeyWords.ROD_POWER_INCREASE]["tiers"].items()}
             # if isinstance(properties, dict) and 'rod_power_increase' in properties:
                 # tier = properties['rod_power_increase']
                 # power_values = {tier: tier_data["value"] for tier, tier_data in config.ROD_PROPERTIES["rod_power_increase"]["tiers"].items()}
