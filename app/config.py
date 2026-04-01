@@ -67,7 +67,7 @@ INCOME_PROPERTIES = {
             9: {"value": 8.0, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 10.0, "rarity_weight": 3, "gs_value": 32},
         },
-        "rarity_weight" : 300
+        "rarity_weight" : 600
     },
     "xp": {
         "name": "✨ Опыт",
@@ -190,7 +190,7 @@ COMBAT_PROPERTIES = {
             9: {"value": 25, "rarity_weight": 15, "gs_value": 24},
             10: {"value": 35, "rarity_weight": 3, "gs_value": 32},
         },
-        "rarity_weight" : 1000
+        "rarity_weight" : 1700
     },
 }
 
@@ -202,8 +202,10 @@ FISHING_ROD_BASES = [
     {"rarity": "common", "durabillity" : (50, 150), "damage": (1,3), "rarity_weight": 700},
     {"rarity": "uncommon", "durabillity" : (120, 250), "damage": (2,5), "rarity_weight": 500},
     {"rarity": "rare", "durabillity" : (220, 500), "damage": (3,7), "rarity_weight": 300},
+    {"rarity": "rare", "durabillity" : (80, 130), "damage": (2,35), "rarity_weight": 300},
     {"rarity": "epic", "durabillity" : (450, 800), "damage": (6,10), "rarity_weight": 100},
     {"rarity": "legendary", "durabillity" : (700, 1000), "damage": (8,15), "rarity_weight": 20},
+    {"rarity": "legendary", "durabillity" : (250, 400), "damage": (12,25), "rarity_weight": 20},
 ]
 
 FISHING_ROD_BASES_WEIGHTS = [

@@ -10,7 +10,7 @@ uvicorn main:app  --port 5000
 - [ ] Добавить интересных аффиксов
 - [ ] Пересмотреть логику:
   - `catch_fish_logic`
-  - `generate_random_rod`
+  - [x] `generate_random_rod`
   - `calculate_strike_damage`
 - [ ] Улучшить бой с рыбой:
   - Добавить таймер на бой
