@@ -49,9 +49,14 @@ const UI_ELEMENTS = {
     sideMenuVersion: document.getElementById('side-menu-version'),
     auctionModal: document.getElementById('auction-modal'),
     closeAuctionModal: document.getElementById('close-auction-modal'),
-    auctionSelectedRod: document.getElementById('auction-selected-rod'),
-    auctionPriceInput: document.getElementById('auction-price-input'),
-    auctionSubmitBtn: document.getElementById('auction-submit-btn'),
+    auctionSellModal: document.getElementById('auction-sell-modal'),
+    closeAuctionSellModal: document.getElementById('close-auction-sell-modal'),
+    auctionSelectedRod: document.getElementById('auction-sell-selected-rod'),
+    auctionPriceInput: document.getElementById('auction-sell-price-input'),
+    auctionPricePreview: document.getElementById('auction-sell-price-preview'),
+    auctionFeeAmount: document.getElementById('auction-sell-fee-amount'),
+    auctionFeeNote: document.getElementById('auction-sell-fee-note'),
+    auctionSubmitBtn: document.getElementById('auction-sell-submit-btn'),
     auctionListings: document.getElementById('auction-listings'),
     auctionMyListings: document.getElementById('auction-my-listings'),
     auctionBottomSheet: document.getElementById('auction-bottom-sheet'),
@@ -92,6 +97,9 @@ async function initializeGame() {
         window.ROD_PROPERTY_DESCRIPTIONS = constants.ROD_PROPERTY_DESCRIPTIONS;
         window.ROD_PROPERTY_VALUES = constants.ROD_PROPERTY_VALUES;
         window.ROD_UPGRADE_SYSTEM = constants.ROD_UPGRADE_SYSTEM;
+        window.AUCTION_LISTING_DURATION_HOURS = constants.AUCTION_LISTING_DURATION_HOURS ?? 72;
+        window.AUCTION_LISTING_FEE_PERCENT = constants.AUCTION_LISTING_FEE_PERCENT ?? 0.01;
+        window.AUCTION_LISTING_MIN_FEE = constants.AUCTION_LISTING_MIN_FEE ?? 1;
         
         console.log('window.ROD_UPGRADE_SYSTEM установлена:', window.ROD_UPGRADE_SYSTEM);
         
@@ -384,10 +392,11 @@ async function buyRod() {
         Log.success(`🎲 Куплена: ${data.rod.name}. Наденьте её в инвентаре!`);
     } catch (e) {
         if (e.message && e.message.includes('Инвентарь полон')) {
-            Log.error("🎒 Инвентарь полон! Удалите лишние удочки.");
-        } else {
-            Log.error(`Ошибка при покупке: ${e.message}`);
+            ToastManager.show('Инвентарь полон! Удалите лишние удочки.', { type: 'warning' });
+            return;
         }
+
+        Log.error(`Ошибка при покупке: ${e.message}`);
     }
 }
 
@@ -482,7 +491,12 @@ function openSettings() {
 }
 
 function openAuction(selectedRod = null) {
-    AuctionManager.open(selectedRod);
+    if (selectedRod) {
+        AuctionManager.openSellModal(selectedRod);
+        return;
+    }
+
+    AuctionManager.open();
 }
 
 let sideMenuHideTimer = null;
@@ -648,6 +662,12 @@ function initializeEventHandlers() {
     if (UI_ELEMENTS.closeAuctionModal) {
         UI_ELEMENTS.closeAuctionModal.onclick = () => {
             AuctionManager.close();
+        };
+    }
+
+    if (UI_ELEMENTS.closeAuctionSellModal) {
+        UI_ELEMENTS.closeAuctionSellModal.onclick = () => {
+            AuctionManager.closeSellModal();
         };
     }
 

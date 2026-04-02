@@ -4,6 +4,10 @@
     gap: 18px;
 }
 
+.auction-sell-modal-content {
+    max-width: 560px;
+}
+
 .auction-section {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -13,6 +17,29 @@
 
 .auction-section h4 {
     margin: 0 0 12px;
+}
+
+.auction-sell-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auction-sell-lead {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.5;
+}
+
+.auction-sell-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.auction-sell-input-group span {
+    font-size: 0.92rem;
+    color: rgba(255, 255, 255, 0.82);
 }
 
 .auction-sell-controls {
@@ -31,51 +58,104 @@
     font-size: 1rem;
 }
 
-.auction-grid,
+.auction-sell-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.auction-fee-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.auction-fee-label {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.64);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.auction-fee-value {
+    font-size: 1.2rem;
+    color: #ffffff;
+}
+
+.auction-fee-note {
+    min-height: 20px;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.auction-sell-submit-btn {
+    height: 60px;
+}
+
 .auction-selected-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 10px;
-    padding: 12px;
-    background: linear-gradient(135deg, rgba(20, 20, 25, 0.8) 0%, rgba(30, 30, 35, 0.8) 100%);
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    min-height: 360px;
-    position: relative;
-    box-sizing: border-box;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    touch-action: pan-y;
-}
-
-.auction-grid::before,
-.auction-selected-grid::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    pointer-events: none;
-}
-
-.auction-selected-grid {
     grid-template-columns: repeat(1, minmax(0, 132px));
     grid-template-rows: auto;
     min-height: 156px;
     justify-content: start;
 }
 
-.auction-slot.inventory-slot {
-    aspect-ratio: 1;
-    cursor: pointer;
+#auction-sell-selected-rod.auction-selected-grid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 228px;
+    padding: 10px 0 4px;
+    background: none;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
 }
 
-.auction-slot.inventory-slot:hover:not(.empty) {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
-    border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 0 12px rgba(0, 122, 255, 0.15);
+#auction-sell-selected-rod.auction-selected-grid::before {
+    display: none;
+}
+
+#auction-sell-selected-rod .inventory-slot {
+    width: clamp(176px, 46vw, 210px);
+    max-width: 100%;
+}
+
+#auction-sell-selected-rod .inventory-slot .item-icon {
+    font-size: 3.1rem;
+    margin-bottom: 6px;
+}
+
+#auction-sell-selected-rod .inventory-slot .item-name {
+    font-size: 0.82rem;
+    padding: 0 10px;
+}
+
+#auction-sell-selected-rod .inventory-slot .item-durability {
+    top: 6px;
+    right: 6px;
+    font-size: 1rem;
+}
+
+#auction-sell-selected-rod .inventory-slot .item-gear-score {
+    bottom: 6px;
+    right: 6px;
+    font-size: 0.95rem;
+}
+
+#auction-sell-selected-rod .auction-empty-state.centered {
+    width: min(100%, 320px);
+    min-height: 152px;
+    margin: 0 auto;
+}
+
+.auction-slot.inventory-slot {
+    cursor: pointer;
 }
 
 .auction-slot.my-lot {
@@ -97,6 +177,7 @@
 }
 
 .auction-slot .item-price,
+.auction-slot .item-timer,
 .auction-slot .item-seller {
     position: absolute;
     left: 4px;
@@ -116,6 +197,11 @@
     max-width: calc(100% - 30px);
     color: #ffd700;
     font-weight: 700;
+}
+
+.auction-slot .item-timer {
+    top: 19px;
+    color: rgba(255, 255, 255, 0.74);
 }
 
 .auction-slot .item-seller {
@@ -144,13 +230,6 @@
 }
 
 @media (max-width: 1024px) {
-    .auction-grid {
-        grid-template-columns: repeat(4, 1fr);
-        min-height: 320px;
-        gap: 8px;
-        padding: 10px;
-    }
-
     .auction-selected-grid {
         grid-template-columns: repeat(1, minmax(0, 132px));
         min-height: 152px;
@@ -158,20 +237,19 @@
         padding: 10px;
     }
 
+    #auction-sell-selected-rod.auction-selected-grid {
+        min-height: 214px;
+        padding: 8px 0 2px;
+    }
+
     .auction-slot .item-price,
+    .auction-slot .item-timer,
     .auction-slot .item-seller {
         font-size: 0.58rem;
     }
 }
 
 @media (max-width: 768px) {
-    .auction-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        min-height: 300px;
-        gap: 6px;
-        padding: 8px;
-    }
-
     .auction-selected-grid {
         grid-template-columns: repeat(1, minmax(0, 118px));
         min-height: 140px;
@@ -179,16 +257,26 @@
         padding: 8px;
     }
 
-    .auction-slot.inventory-slot {
-        padding: 3px;
+    #auction-sell-selected-rod.auction-selected-grid {
+        min-height: 196px;
+        padding: 6px 0 0;
+    }
+
+    #auction-sell-selected-rod .inventory-slot {
+        width: min(188px, 100%);
     }
 
     .auction-slot .item-price,
+    .auction-slot .item-timer,
     .auction-slot .item-seller {
         left: 3px;
         right: 3px;
         font-size: 0.52rem;
         padding: 2px 4px;
+    }
+
+    .auction-slot .item-timer {
+        top: 18px;
     }
 
     .auction-slot .item-seller {
@@ -198,16 +286,13 @@
     .auction-sell-controls {
         flex-direction: column;
     }
+
+    .auction-sell-summary {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 480px) {
-    .auction-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        min-height: 150px;
-        gap: 5px;
-        padding: 5px;
-    }
-
     .auction-selected-grid {
         grid-template-columns: repeat(1, minmax(0, 104px));
         min-height: 124px;
@@ -215,21 +300,26 @@
         padding: 5px;
     }
 
+    #auction-sell-selected-rod.auction-selected-grid {
+        min-height: 178px;
+    }
+
+    #auction-sell-selected-rod .inventory-slot {
+        width: min(172px, 100%);
+    }
+
+    #auction-sell-selected-rod .inventory-slot .item-icon {
+        font-size: 2.75rem;
+    }
+
     .auction-slot .item-price,
+    .auction-slot .item-timer,
     .auction-slot .item-seller {
         font-size: 0.48rem;
     }
-
 }
 
 @media (max-width: 360px) {
-    .auction-grid {
-        grid-template-columns: repeat(2, 1fr);
-        min-height: 260px;
-        gap: 5px;
-        padding: 5px;
-    }
-
     .auction-selected-grid {
         grid-template-columns: repeat(1, minmax(0, 96px));
         min-height: 116px;
@@ -237,8 +327,12 @@
         padding: 5px;
     }
 
-    .auction-slot .item-name {
-        display: none;
+    #auction-sell-selected-rod.auction-selected-grid {
+        min-height: 164px;
+    }
+
+    #auction-sell-selected-rod .inventory-slot {
+        width: min(154px, 100%);
     }
 
     .auction-slot .item-seller {

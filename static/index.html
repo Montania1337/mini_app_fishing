@@ -80,7 +80,7 @@
     </div>
 
 <div class="menu-grid">
-    <button id="inventory-btn" class="secondary-btn">🎒 Инвентарь</button>
+    <button id="inventory-btn" class="secondary-btn">🎣 Удочки</button>
     <button id="settings-btn" class="secondary-btn">⚙️ Настройки</button>
     <button id="sidebar-toggle" class="secondary-btn">☰ Меню</button>
 </div>
@@ -93,7 +93,7 @@
             <div class="side-menu-kicker">Навигация</div>
             <div class="side-menu-title">Игровые разделы</div>
         </div>
-        <button id="close-side-menu" class="close-btn">✖</button>
+        <button id="close-side-menu" class="btn-close">✖</button>
     </div>
 
     <div class="side-menu-nav">
@@ -112,7 +112,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3>Ваши достижения</h3>
-            <button id="close-ach-modal">✖</button>
+            <button id="close-ach-modal" class="btn-close">✖</button>
         </div>
         <div id="achievements-list" class="ach-list">
             </div>
@@ -123,7 +123,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3>⚙️ Настройки</h3>
-            <button id="close-settings-modal">✖</button>
+            <button id="close-settings-modal" class="btn-close">✖</button>
         </div>
         <div class="settings-content">
             <div class="settings-section">
@@ -147,7 +147,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3>Магазин и Инвентарь</h3>
-            <button id="close-modal">✖</button>
+            <button id="close-modal" class="btn-close">✖</button>
         </div>
         
         <div class="shop-section">
@@ -160,7 +160,7 @@
             <div class="inventory-section-header">
                 <h4>Ваши удочки:</h4>
                 <button id="inventory-tools-toggle" class="secondary-btn inventory-tools-toggle" type="button" aria-expanded="false" aria-controls="inventory-tools-panel">
-                    Автоудаление
+                    Массовое удаление
                     <span class="inventory-tools-toggle-icon">▾</span>
                 </button>
             </div>
@@ -171,7 +171,7 @@
                         <input id="auto-delete-gs-input" class="inventory-gs-input" type="number" min="0" step="1" placeholder="Например, 150">
                     </label>
                     <button id="auto-delete-gs-btn" class="secondary-btn inventory-auto-delete-btn">
-                        Автоудалить
+                        Удалить
                     </button>
                 </div>
             </div>
@@ -187,19 +187,10 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3>Аукцион удочек</h3>
-            <button id="close-auction-modal">✖</button>
+            <button id="close-auction-modal" class="btn-close">✖</button>
         </div>
 
         <div class="auction-layout">
-            <section class="auction-section">
-                <h4>Выставить удочку</h4>
-                <div id="auction-selected-rod" class="auction-selected-grid"></div>
-                <div class="auction-sell-controls">
-                    <input id="auction-price-input" class="auction-price-input" type="number" min="1" placeholder="Цена в монетах">
-                    <button id="auction-submit-btn" class="main-btn">Выставить</button>
-                </div>
-            </section>
-
             <section class="auction-section">
                 <h4>Лоты игроков</h4>
                 <div id="auction-listings" class="auction-grid"></div>
@@ -209,6 +200,44 @@
                 <h4>Мои лоты</h4>
                 <div id="auction-my-listings" class="auction-grid"></div>
             </section>
+        </div>
+    </div>
+</div>
+
+<div id="auction-sell-modal" class="modal-overlay hidden">
+    <div class="modal-content auction-sell-modal-content">
+        <div class="modal-header">
+            <h3>Выставить на аукцион</h3>
+            <button id="close-auction-sell-modal" class="btn-close">✖</button>
+        </div>
+
+        <div class="auction-sell-form">
+            <p class="auction-sell-lead">
+                Лот будет активен 72 часа. Комиссия списывается сразу при выставлении.
+            </p>
+
+            <div id="auction-sell-selected-rod" class="auction-selected-grid"></div>
+
+            <label class="auction-sell-input-group" for="auction-sell-price-input">
+                <span>Цена лота</span>
+                <input id="auction-sell-price-input" class="auction-price-input" type="number" min="1" placeholder="Введите цену в монетах">
+            </label>
+
+            <div class="auction-sell-summary">
+                <div class="auction-fee-card">
+                    <span class="auction-fee-label">Цена продажи</span>
+                    <strong id="auction-sell-price-preview" class="auction-fee-value">—</strong>
+                </div>
+
+                <div class="auction-fee-card">
+                    <span class="auction-fee-label">Комиссия</span>
+                    <strong id="auction-sell-fee-amount" class="auction-fee-value">—</strong>
+                </div>
+            </div>
+
+            <div id="auction-sell-fee-note" class="auction-fee-note"></div>
+
+            <button id="auction-sell-submit-btn" class="main-btn auction-sell-submit-btn">Выставить лот</button>
         </div>
     </div>
 </div>
@@ -275,7 +304,7 @@
     <div class="modal-content upgrade-modal-content">
         <div class="modal-header">
             <h3 id="upgrade-modal-title">Улучшение удочки</h3>
-            <button id="close-upgrade-modal" class="close-btn">✖</button>
+            <button id="close-upgrade-modal" class="btn-close">✖</button>
         </div>
         
         <div class="upgrade-modal-body">
@@ -334,7 +363,7 @@
     <div class="modal-content large">
         <div class="modal-header">
             <h2>Таблица лидеров</h2>
-            <button id="close-leaderboard" class="close-btn">&times;</button>
+            <button id="close-leaderboard" class="btn-close">✖</button>
         </div>
         
         <div class="tabs">
@@ -355,6 +384,7 @@
     <script src="/static/js/modules/api.js"></script>
     <script src="/static/js/modules/log.js"></script>
     <script src="/static/js/modules/ui.js"></script>
+    <script src="/static/js/modules/toast.js"></script>
     
     <!-- Модули которые используют константы -->
     <script src="static/js/modules/constants.js"></script>

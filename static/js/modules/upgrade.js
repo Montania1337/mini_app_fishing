@@ -9,6 +9,9 @@ const UpgradeManager = {
     particleCount: 0,
 
     showToast(message, type = 'success') {
+        const normalizedMessage = String(message).replace(/^[✨❌⚠️\s]+/u, '');
+        ToastManager.show(normalizedMessage, { type });
+        return;
         // Удаляем старое уведомление если есть
         const oldToast = document.querySelector('.toast-notification');
         if (oldToast) {

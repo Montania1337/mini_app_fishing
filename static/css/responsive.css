@@ -4,7 +4,8 @@
 
 /* Планшеты (768px - 1024px) */
 @media (max-width: 1024px) {
-    .inventory-grid {
+    .inventory-grid,
+    .auction-grid {
         grid-template-columns: repeat(4, 1fr);
         min-height: 320px;
         gap: 8px;
@@ -32,7 +33,8 @@
 
 /* Большие телефоны (480px - 768px) */
 @media (max-width: 768px) {
-    .inventory-grid {
+    .inventory-grid,
+    .auction-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         min-height: 300px;
         gap: 6px;
@@ -70,7 +72,8 @@
 /* Средние телефоны (414px - 480px) */
 @media (max-width: 480px) {
 
-    .inventory-grid {
+    .inventory-grid,
+    .auction-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         min-height: 150px;
         gap: 5px;
@@ -101,7 +104,8 @@
 @media (max-width: 360px) {
 
     
-    .inventory-grid {
+    .inventory-grid,
+    .auction-grid {
         grid-template-columns: repeat(2, 1fr);
         min-height: 260px;
         gap: 5px;

@@ -3,6 +3,10 @@
  */
 
 const API = {
+    shouldSkipLog(endpoint, message = '') {
+        return endpoint === 'buy-rod' && message.includes('Инвентарь полон');
+    },
+
     async request(endpoint, body = {}) {
         try {
             // Получаем пользователя из GameState если доступен, иначе из window.user
@@ -34,7 +38,7 @@ const API = {
         } catch (e) {
             console.error(`Ошибка в запросе ${endpoint}:`, e);
             // Log может быть не инициализирован на момент первого обращения
-            if (typeof Log !== 'undefined' && Log.show) {
+            if (typeof Log !== 'undefined' && Log.show && !this.shouldSkipLog(endpoint, e.message || '')) {
                 Log.show(e.message, 'error');
             }
             throw e;

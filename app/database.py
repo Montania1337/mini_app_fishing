@@ -1,12 +1,53 @@
 import sqlite3
 import json
+import math
 from contextlib import contextmanager
-from app.config import RodKeyWords
+from datetime import datetime, timezone
+from app.config import RodKeyWords, AUCTION_LISTING_DURATION_HOURS, AUCTION_LISTING_FEE_PERCENT, AUCTION_LISTING_MIN_FEE
 from typing import Optional, List, Dict
 
 from .config import DATABASE_DIR, DATABASE_FILE_PATH
 
 DATABASE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _auction_expiry_modifier() -> str:
+    return f"+{AUCTION_LISTING_DURATION_HOURS} hours"
+
+
+def _cleanup_expired_auction_listings(cursor) -> int:
+    cursor.execute(
+        '''
+            UPDATE auction_listings
+            SET is_active = 0
+            WHERE is_active = 1
+              AND datetime(COALESCE(expires_at, datetime(created_at, ?))) <= CURRENT_TIMESTAMP
+        ''',
+        (_auction_expiry_modifier(),)
+    )
+    return cursor.rowcount
+
+
+def _serialize_auction_listing(row: sqlite3.Row) -> Dict:
+    listing = dict(row)
+    expires_at_ts = listing.get("expires_at_ts")
+    now_ts = int(datetime.now(timezone.utc).timestamp())
+
+    if expires_at_ts is not None:
+        expires_at_ts = int(expires_at_ts)
+        listing["expires_at_ts"] = expires_at_ts
+        listing["remaining_seconds"] = max(0, expires_at_ts - now_ts)
+    else:
+        listing["remaining_seconds"] = 0
+
+    return listing
+
+
+def calculate_auction_listing_fee(price: int) -> int:
+    if price <= 0:
+        return 0
+
+    return max(AUCTION_LISTING_MIN_FEE, math.ceil(price * AUCTION_LISTING_FEE_PERCENT))
 
 
 @contextmanager
@@ -77,6 +118,7 @@ def init_db():
                 price INTEGER NOT NULL,
                 is_active INTEGER DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP,
                 FOREIGN KEY(rod_id) REFERENCES rods(id) ON DELETE CASCADE,
                 FOREIGN KEY(seller_id) REFERENCES players(user_id) ON DELETE CASCADE
             )
@@ -113,6 +155,18 @@ def init_db():
         try:
             conn.execute("ALTER TABLE auction_listings ADD COLUMN seller_name TEXT DEFAULT 'Рыбак'")
         except: pass
+        try:
+            conn.execute("ALTER TABLE auction_listings ADD COLUMN expires_at TIMESTAMP")
+        except: pass
+        conn.execute(
+            '''
+                UPDATE auction_listings
+                SET expires_at = datetime(created_at, ?)
+                WHERE expires_at IS NULL
+            ''',
+            (_auction_expiry_modifier(),)
+        )
+        _cleanup_expired_auction_listings(conn.cursor())
         conn.commit()
     rename_rod_properties_in_db()
     print(f"База данных успешно инициализирована: {DATABASE_FILE_PATH}")
@@ -244,14 +298,17 @@ def add_rod(user_id: int, rod_data: Dict) -> int:
 def get_user_rods(user_id: int) -> List[Dict]:
     with get_connection() as conn:
         cursor = conn.cursor()
+        _cleanup_expired_auction_listings(cursor)
         cursor.execute('''
             SELECT r.*
             FROM rods r
             LEFT JOIN auction_listings al
-                ON al.rod_id = r.id AND al.is_active = 1
+                ON al.rod_id = r.id
+               AND al.is_active = 1
+               AND datetime(COALESCE(al.expires_at, datetime(al.created_at, ?))) > CURRENT_TIMESTAMP
             WHERE r.user_id = ? AND al.id IS NULL
             ORDER BY COALESCE(r.position, r.id)
-        ''', (user_id,))
+        ''', (_auction_expiry_modifier(), user_id))
         rods = []
         for row in cursor.fetchall():
             rod = dict(row)
@@ -278,13 +335,16 @@ def get_user_rods(user_id: int) -> List[Dict]:
 def get_active_rod(user_id: int) -> Optional[Dict]:
     with get_connection() as conn:
         cursor = conn.cursor()
+        _cleanup_expired_auction_listings(cursor)
         cursor.execute('''
             SELECT r.*
             FROM rods r
             LEFT JOIN auction_listings al
-                ON al.rod_id = r.id AND al.is_active = 1
+                ON al.rod_id = r.id
+               AND al.is_active = 1
+               AND datetime(COALESCE(al.expires_at, datetime(al.created_at, ?))) > CURRENT_TIMESTAMP
             WHERE r.user_id = ? AND r.is_active = 1 AND al.id IS NULL
-        ''', (user_id,))
+        ''', (_auction_expiry_modifier(), user_id))
         row = cursor.fetchone()
         if not row:
             return None
@@ -304,15 +364,20 @@ def get_active_rod(user_id: int) -> Optional[Dict]:
 
 def set_active_rod_db(user_id: int, rod_id: int):
     with get_connection() as conn:
+        cursor = conn.cursor()
+        _cleanup_expired_auction_listings(cursor)
         conn.execute("UPDATE rods SET is_active = 0 WHERE user_id = ?", (user_id,))
         conn.execute('''
             UPDATE rods
             SET is_active = 1
             WHERE user_id = ? AND id = ?
               AND id NOT IN (
-                  SELECT rod_id FROM auction_listings WHERE is_active = 1
+                  SELECT rod_id
+                  FROM auction_listings
+                  WHERE is_active = 1
+                    AND datetime(COALESCE(expires_at, datetime(created_at, ?))) > CURRENT_TIMESTAMP
               )
-        ''', (user_id, rod_id))
+        ''', (user_id, rod_id, _auction_expiry_modifier()))
         conn.commit()
 
 def reduce_durability(rod_id: int):
@@ -379,6 +444,7 @@ def update_rod_upgrade(rod_id: int, new_level: int, damage_bonus: int):
 def get_auction_listings() -> List[Dict]:
     with get_connection() as conn:
         cursor = conn.cursor()
+        _cleanup_expired_auction_listings(cursor)
         cursor.execute('''
             SELECT
                 al.id,
@@ -387,6 +453,8 @@ def get_auction_listings() -> List[Dict]:
                 al.seller_name,
                 al.price,
                 al.created_at,
+                COALESCE(al.expires_at, datetime(al.created_at, ?)) AS expires_at,
+                CAST(strftime('%s', COALESCE(al.expires_at, datetime(al.created_at, ?))) AS INTEGER) AS expires_at_ts,
                 r.name,
                 r.rarity,
                 r.properties,
@@ -399,13 +467,14 @@ def get_auction_listings() -> List[Dict]:
             JOIN rods r ON r.id = al.rod_id
             WHERE al.is_active = 1
             ORDER BY al.created_at DESC, al.id DESC
-        ''')
-        return [dict(row) for row in cursor.fetchall()]
+        ''', (_auction_expiry_modifier(), _auction_expiry_modifier()))
+        return [_serialize_auction_listing(row) for row in cursor.fetchall()]
 
 
 def get_user_auction_listings(user_id: int) -> List[Dict]:
     with get_connection() as conn:
         cursor = conn.cursor()
+        _cleanup_expired_auction_listings(cursor)
         cursor.execute('''
             SELECT
                 al.id,
@@ -414,6 +483,8 @@ def get_user_auction_listings(user_id: int) -> List[Dict]:
                 al.seller_name,
                 al.price,
                 al.created_at,
+                COALESCE(al.expires_at, datetime(al.created_at, ?)) AS expires_at,
+                CAST(strftime('%s', COALESCE(al.expires_at, datetime(al.created_at, ?))) AS INTEGER) AS expires_at_ts,
                 r.name,
                 r.rarity,
                 r.properties,
@@ -426,13 +497,15 @@ def get_user_auction_listings(user_id: int) -> List[Dict]:
             JOIN rods r ON r.id = al.rod_id
             WHERE al.is_active = 1 AND al.seller_id = ?
             ORDER BY al.created_at DESC, al.id DESC
-        ''', (user_id,))
-        return [dict(row) for row in cursor.fetchall()]
+        ''', (_auction_expiry_modifier(), _auction_expiry_modifier(), user_id))
+        return [_serialize_auction_listing(row) for row in cursor.fetchall()]
 
 
 def create_auction_listing(user_id: int, rod_id: int, price: int, seller_name: str) -> Dict:
     with get_connection() as conn:
         cursor = conn.cursor()
+        cursor.execute("BEGIN IMMEDIATE")
+        _cleanup_expired_auction_listings(cursor)
         cursor.execute("SELECT * FROM rods WHERE id = ? AND user_id = ?", (rod_id, user_id))
         rod = cursor.fetchone()
         if not rod:
@@ -444,34 +517,52 @@ def create_auction_listing(user_id: int, rod_id: int, price: int, seller_name: s
         if price <= 0:
             raise ValueError("Цена должна быть больше 0")
 
+        commission_fee = calculate_auction_listing_fee(price)
+        cursor.execute("SELECT balance FROM players WHERE user_id = ?", (user_id,))
+        seller = cursor.fetchone()
+        seller_balance = seller["balance"] if seller else 0
+
+        if seller_balance < commission_fee:
+            raise ValueError(f"Недостаточно монет на комиссию аукциона ({commission_fee})")
+
         cursor.execute("SELECT id FROM auction_listings WHERE rod_id = ? AND is_active = 1", (rod_id,))
         if cursor.fetchone():
             raise ValueError("Эта удочка уже выставлена на аукцион")
 
         cursor.execute('''
-            INSERT INTO auction_listings (rod_id, seller_id, seller_name, price, is_active)
-            VALUES (?, ?, ?, ?, 1)
+            INSERT INTO auction_listings (rod_id, seller_id, seller_name, price, is_active, expires_at)
+            VALUES (?, ?, ?, ?, 1, datetime(CURRENT_TIMESTAMP, ?))
             ON CONFLICT(rod_id) DO UPDATE SET
                 seller_id = excluded.seller_id,
                 seller_name = excluded.seller_name,
                 price = excluded.price,
                 is_active = 1,
-                created_at = CURRENT_TIMESTAMP
-        ''', (rod_id, user_id, seller_name or "Рыбак", price))
+                created_at = CURRENT_TIMESTAMP,
+                expires_at = datetime(CURRENT_TIMESTAMP, ?)
+        ''', (rod_id, user_id, seller_name or "Рыбак", price, _auction_expiry_modifier(), _auction_expiry_modifier()))
         cursor.execute("SELECT id FROM auction_listings WHERE rod_id = ?", (rod_id,))
         listing_id = cursor.fetchone()[0]
+        cursor.execute(
+            "UPDATE players SET balance = balance - ? WHERE user_id = ?",
+            (commission_fee, user_id)
+        )
+        cursor.execute("SELECT balance FROM players WHERE user_id = ?", (user_id,))
+        new_balance = cursor.fetchone()[0]
         conn.commit()
 
         return {
             "listing_id": listing_id,
             "rod_id": rod_id,
-            "price": price
+            "price": price,
+            "commission_fee": commission_fee,
+            "balance": new_balance
         }
 
 
 def cancel_auction_listing(user_id: int, listing_id: int) -> bool:
     with get_connection() as conn:
         cursor = conn.cursor()
+        _cleanup_expired_auction_listings(cursor)
         cursor.execute('''
             UPDATE auction_listings
             SET is_active = 0
@@ -485,6 +576,7 @@ def buy_auction_listing(buyer_id: int, listing_id: int, inventory_limit: int) ->
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("BEGIN IMMEDIATE")
+        _cleanup_expired_auction_listings(cursor)
 
         cursor.execute('''
             SELECT
@@ -516,9 +608,11 @@ def buy_auction_listing(buyer_id: int, listing_id: int, inventory_limit: int) ->
             SELECT COUNT(*)
             FROM rods r
             LEFT JOIN auction_listings al
-                ON al.rod_id = r.id AND al.is_active = 1
+                ON al.rod_id = r.id
+               AND al.is_active = 1
+               AND datetime(COALESCE(al.expires_at, datetime(al.created_at, ?))) > CURRENT_TIMESTAMP
             WHERE r.user_id = ? AND al.id IS NULL
-        ''', (buyer_id,))
+        ''', (_auction_expiry_modifier(), buyer_id))
         visible_rods_count = cursor.fetchone()[0]
         if visible_rods_count >= inventory_limit:
             raise ValueError("Инвентарь покупателя заполнен")

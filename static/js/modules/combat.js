@@ -90,9 +90,7 @@ const CombatManager = {
         }
 
         if (data.new_achievements && data.new_achievements.length > 0) {
-            data.new_achievements.forEach((ach) => {
-                Log.achievement(ach.name);
-            });
+            AchievementManager.showUnlockedToasts(data.new_achievements);
         }
 
         if (window.tg && window.tg.HapticFeedback) {

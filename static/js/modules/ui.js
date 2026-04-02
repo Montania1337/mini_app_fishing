@@ -13,9 +13,13 @@ const UIManager = {
     },
 
     updateBalance(newBalance) {
-        this.state.balance = newBalance;
+        const numericBalance = Number.isFinite(Number(newBalance))
+            ? Number(newBalance)
+            : Number(this.state.balance || 0);
+
+        this.state.balance = numericBalance;
         if (this.elements.balance) {
-            this.elements.balance.innerText = newBalance.toLocaleString();
+            this.elements.balance.innerText = numericBalance.toLocaleString('ru-RU');
             this.animatePop(this.elements.balance);
         }
     },

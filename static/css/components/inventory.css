@@ -2,16 +2,14 @@
    INVENTORY.CSS - Инвентарь и сетка слотов
    ================================================================ */
 
-.inventory-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+.inventory-grid,
+.auction-grid,
+.auction-selected-grid {
     gap: 10px;
     padding: 12px;
     background: linear-gradient(135deg, rgba(20, 20, 25, 0.8) 0%, rgba(30, 30, 35, 0.8) 100%);
     border: 2px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
-    min-height: 360px;
     position: relative;
     box-sizing: border-box;
     width: 100%;
@@ -20,7 +18,17 @@
     touch-action: pan-y;
 }
 
-.inventory-grid::before {
+.inventory-grid,
+.auction-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    min-height: 360px;
+}
+
+.inventory-grid::before,
+.auction-grid::before,
+.auction-selected-grid::before {
     content: '';
     position: absolute;
     top: 0;
@@ -129,9 +137,16 @@
 }
 
 .inventory-slot {
+    --slot-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+    --slot-border-color: rgba(255, 255, 255, 0.12);
+    --slot-shadow: none;
+    --slot-hover-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+    --slot-hover-border-color: rgba(255, 255, 255, 0.25);
+    --slot-hover-shadow: 0 0 12px rgba(0, 122, 255, 0.15);
     aspect-ratio: 1;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
-    border: 2px solid rgba(255, 255, 255, 0.12);
+    background: var(--slot-bg);
+    border: 2px solid var(--slot-border-color);
+    box-shadow: var(--slot-shadow);
     border-radius: 6px;
     display: flex;
     flex-direction: column;
@@ -148,9 +163,9 @@
 }
 
 .inventory-slot:hover:not(.empty) {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
-    border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 0 12px rgba(0, 122, 255, 0.15);
+    background: var(--slot-hover-bg);
+    border-color: var(--slot-hover-border-color);
+    box-shadow: var(--slot-hover-shadow);
 }
 
 .inventory-slot.active {
@@ -231,6 +246,45 @@
     color: #ffd700;
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
     font-weight: 600;
+}
+
+.inventory-slot.gs-tier-15 {
+    --slot-bg: linear-gradient(145deg, rgba(18, 45, 88, 0.92) 0%, rgba(18, 70, 122, 0.52) 45%, rgba(255, 255, 255, 0.02) 100%);
+    --slot-border-color: rgba(110, 190, 255, 0.45);
+    --slot-shadow: inset 0 0 18px rgba(80, 160, 255, 0.12), 0 0 14px rgba(34, 128, 255, 0.12);
+    --slot-hover-bg: linear-gradient(145deg, rgba(24, 58, 108, 0.96) 0%, rgba(26, 90, 156, 0.58) 50%, rgba(255, 255, 255, 0.05) 100%);
+    --slot-hover-border-color: rgba(130, 205, 255, 0.62);
+    --slot-hover-shadow: inset 0 0 22px rgba(92, 176, 255, 0.18), 0 0 18px rgba(48, 142, 255, 0.2);
+}
+
+.inventory-slot.gs-tier-25 {
+    --slot-bg: linear-gradient(145deg, rgba(52, 18, 88, 0.9) 0%, rgba(109, 40, 153, 0.55) 45%, rgba(255, 214, 102, 0.08) 100%);
+    --slot-border-color: rgba(199, 146, 255, 0.5);
+    --slot-shadow: inset 0 0 20px rgba(183, 112, 255, 0.14), 0 0 16px rgba(169, 85, 247, 0.14);
+    --slot-hover-bg: linear-gradient(145deg, rgba(66, 24, 112, 0.95) 0%, rgba(133, 52, 176, 0.62) 50%, rgba(255, 220, 124, 0.12) 100%);
+    --slot-hover-border-color: rgba(226, 180, 255, 0.68);
+    --slot-hover-shadow: inset 0 0 24px rgba(198, 134, 255, 0.2), 0 0 20px rgba(183, 98, 255, 0.22);
+}
+
+.inventory-slot.gs-tier-35 {
+    --slot-bg: linear-gradient(145deg, rgba(94, 38, 8, 0.92) 0%, rgba(180, 83, 9, 0.62) 42%, rgba(255, 215, 0, 0.18) 100%);
+    --slot-border-color: rgba(255, 214, 102, 0.6);
+    --slot-shadow: inset 0 0 22px rgba(255, 196, 70, 0.16), 0 0 18px rgba(255, 157, 0, 0.18);
+    --slot-hover-bg: linear-gradient(145deg, rgba(120, 48, 8, 0.96) 0%, rgba(217, 119, 6, 0.72) 46%, rgba(255, 230, 140, 0.22) 100%);
+    --slot-hover-border-color: rgba(255, 228, 150, 0.78);
+    --slot-hover-shadow: inset 0 0 28px rgba(255, 211, 93, 0.24), 0 0 24px rgba(255, 170, 43, 0.26);
+}
+
+.inventory-slot.gs-tier-15 .item-gear-score {
+    color: #8fd8ff;
+}
+
+.inventory-slot.gs-tier-25 .item-gear-score {
+    color: #e1b6ff;
+}
+
+.inventory-slot.gs-tier-35 .item-gear-score {
+    color: #ffe082;
 }
 
 /* Animation for durability */

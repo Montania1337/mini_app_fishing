@@ -84,19 +84,32 @@
 }
 
 /* Close button */
-.close-btn, #close-modal, #close-ach-modal {
-    background: var(--secondary-bg);
+.btn-close,
+.close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
     border: none;
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    font-size: 18px;
+    color: rgba(255, 255, 255, 0.7);
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    line-height: 1;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.close-btn:active, #close-modal:active, #close-ach-modal:active {
+.btn-close:hover,
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.btn-close:active,
+.close-btn:active {
     transform: scale(0.92);
 }
 

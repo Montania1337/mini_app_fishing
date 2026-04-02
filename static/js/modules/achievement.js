@@ -3,6 +3,26 @@
  */
 
 const AchievementManager = {
+    showUnlockedToast(achievement) {
+        if (!achievement?.name) {
+            return;
+        }
+
+        ToastManager.show(`Достижение разблокировано: ${achievement.name}!`, {
+            type: 'success',
+            icon: '🏆',
+            duration: 4500
+        });
+    },
+
+    showUnlockedToasts(achievements = []) {
+        achievements.forEach((achievement, index) => {
+            window.setTimeout(() => {
+                this.showUnlockedToast(achievement);
+            }, index * 1400);
+        });
+    },
+
     formatProgressLabel(achievement) {
         const current = Number(achievement.progress_current ?? 0);
         const target = Number(achievement.progress_target ?? 0);

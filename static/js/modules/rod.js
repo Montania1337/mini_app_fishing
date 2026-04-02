@@ -1,5 +1,5 @@
 /**
- * Rod Module - управление удочками и инвентарем.
+ * Rod Module - shared rod rendering and calculations.
  */
 
 // import {propOrder} from './constants.js'
@@ -42,6 +42,19 @@ const RodManager = {
         }
     },
 
+    escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
+    escapeAttribute(value) {
+        return this.escapeHtml(value).replace(/`/g, '&#96;');
+    },
+
     parseProperties(rod) {
         if (!rod?.properties) return {};
 
@@ -69,6 +82,89 @@ const RodManager = {
 
     getDurabilityLabel(durability) {
         return durability === -1 ? '♾️' : String(durability);
+    },
+
+    getDurabilityClass(durability) {
+        if (durability === -1) return 'infinite';
+        if (durability <= 10) return 'low';
+        if (durability <= 50) return 'medium';
+        return 'high';
+    },
+
+    getGearScoreClass(gearScore) {
+        if (gearScore > 35) return 'gs-tier-35';
+        if (gearScore > 25) return 'gs-tier-25';
+        if (gearScore > 15) return 'gs-tier-15';
+        return '';
+    },
+
+    buildSlotHTML(rod, options = {}) {
+        const {
+            slotType = 'inventory',
+            active = false,
+            myLot = false,
+            selected = false,
+            sellerLabel = '',
+            priceLabel = '',
+            timeLabel = '',
+            expiresAtTs = null,
+            index = null,
+            listingId = null
+        } = options;
+
+        const durability = Number(rod?.durability ?? 0);
+        const gearScore = Number(rod?.gear_score ?? 0);
+        const durabilityClass = this.getDurabilityClass(durability);
+        const gearScoreClass = this.getGearScoreClass(gearScore);
+        const durabilityValue = this.getDurabilityLabel(durability);
+        const classes = [
+            'inventory-slot',
+            slotType === 'auction' ? 'auction-slot' : '',
+            active ? 'active' : '',
+            myLot ? 'my-lot' : '',
+            selected ? 'selected-lot' : '',
+            myLot && !selected ? 'is-owned' : '',
+            gearScoreClass
+        ].filter(Boolean).join(' ');
+        const attrs = [];
+
+        if (index !== null && index !== undefined) {
+            attrs.push(`data-index="${this.escapeAttribute(String(index))}"`);
+        }
+
+        if (rod?.id !== undefined && rod?.id !== null) {
+            attrs.push(`data-rod-id="${this.escapeAttribute(String(rod.id))}"`);
+        }
+
+        if (listingId !== null && listingId !== undefined) {
+            attrs.push(`data-listing-id="${this.escapeAttribute(String(listingId))}"`);
+        }
+
+        if (expiresAtTs !== null && expiresAtTs !== undefined) {
+            attrs.push(`data-expires-at-ts="${this.escapeAttribute(String(expiresAtTs))}"`);
+        }
+
+        const priceMarkup = priceLabel
+            ? `<div class="item-price">${this.escapeHtml(priceLabel)}</div>`
+            : '';
+        const timeMarkup = timeLabel
+            ? `<div class="item-timer">${this.escapeHtml(timeLabel)}</div>`
+            : '';
+        const sellerMarkup = sellerLabel
+            ? `<div class="item-seller">${this.escapeHtml(sellerLabel)}</div>`
+            : '';
+
+        return `
+            <div class="${classes}" ${attrs.join(' ')}>
+                ${priceMarkup}
+                ${timeMarkup}
+                <div class="item-icon">${this.escapeHtml(rod?.emoji || '🎣')}</div>
+                <div class="item-name">${this.escapeHtml(rod?.name || 'Удочка')}</div>
+                <div class="item-durability durability-${durabilityClass}">${this.escapeHtml(durabilityValue)}</div>
+                <div class="item-gear-score">⚙️ ${this.escapeHtml(String(gearScore))}</div>
+                ${sellerMarkup}
+            </div>
+        `;
     },
 
     getBottomSheetStatsConfig(rod) {
@@ -223,28 +319,9 @@ const RodManager = {
             return;
         }
 
-        const properties = this.parseProperties(rod);
         const durability = rod.durability !== undefined ? rod.durability : 0;
         const damage = this.calculateEffectiveDamage(rod);
         const damageRange = `${damage.effective.min}-${damage.effective.max}`;
-
-        let propertiesHTML = '';
-        if (Object.keys(properties).length > 0) {
-            propertiesHTML = '<div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 8px;">';
-
-            for (const propName of propOrder) {
-                if (!(propName in properties)) continue;
-
-                const tier = properties[propName];
-                const displayName = window.ROD_PROPERTY_NAMES[propName] || propName;
-                const value = this.formatPropertyValue(propName, tier);
-                propertiesHTML += `<div style="margin: 4px 0; font-size: 0.9em;">
-                        ${displayName} ${value} <span style="font-size: 0.8em; color: rgba(255,255,255,0.5);">(${tier}/10)</span>
-                    </div>`;
-            }
-
-            propertiesHTML += '</div>';
-        }
 
         const durabilityText = durability === -1 ? 'Вечная' : (durability > 0 ? `${durability} забросов` : 'Сломана');
         const durabilityColor = durability === -1 ? '#8a2be2' : (durability > 100 ? '#34c759' : (durability > 50 ? '#ff9500' : '#ff3b30'));
@@ -260,6 +337,6 @@ const RodManager = {
         `;
 
         rodInfoElement.className = `rod-card rarity-${rod.rarity}`;
-        UIManager.setHTML(rodInfoElement, html + propertiesHTML);
+        UIManager.setHTML(rodInfoElement, html);
     }
 };

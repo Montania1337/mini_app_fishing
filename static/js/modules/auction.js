@@ -10,12 +10,18 @@ const AuctionManager = {
     listings: [],
     myListings: [],
     currentBottomSheet: null,
+    countdownTimerId: null,
+    isReloadingExpiredListings: false,
 
     init(uiElements) {
         this.ui = {
             modal: uiElements.auctionModal,
+            sellModal: uiElements.auctionSellModal,
             selectedRod: uiElements.auctionSelectedRod,
             priceInput: uiElements.auctionPriceInput,
+            pricePreview: uiElements.auctionPricePreview,
+            feeAmount: uiElements.auctionFeeAmount,
+            feeNote: uiElements.auctionFeeNote,
             listings: uiElements.auctionListings,
             myListings: uiElements.auctionMyListings,
             tooltip: uiElements.tooltip,
@@ -30,17 +36,22 @@ const AuctionManager = {
         if (this.ui.priceInput) {
             this.ui.priceInput.addEventListener('input', () => {
                 this.renderSelectedRod();
+                this.updateSellSummary();
+            });
+        }
+
+        this.startCountdownTicker();
+
+        if (this.ui.sellModal) {
+            this.ui.sellModal.addEventListener('click', (event) => {
+                if (event.target === this.ui.sellModal) {
+                    this.closeSellModal();
+                }
             });
         }
     },
 
-    open(selectedRod = null) {
-        if (selectedRod) {
-            this.setSelectedRod(selectedRod);
-        } else {
-            this.renderSelectedRod();
-        }
-
+    open() {
         this.hideOverlays();
         UIManager.showModal(this.ui.modal);
         this.load();
@@ -49,6 +60,37 @@ const AuctionManager = {
     close() {
         this.hideOverlays();
         UIManager.hideModal(this.ui.modal);
+    },
+
+    openSellModal(rod) {
+        if (!rod || !this.ui.sellModal) return;
+
+        this.hideOverlays();
+        this.selectedRod = rod;
+
+        if (this.ui.priceInput) {
+            this.ui.priceInput.value = '';
+        }
+
+        this.renderSelectedRod();
+        this.updateSellSummary();
+        UIManager.showModal(this.ui.sellModal);
+        this.ui.priceInput?.focus();
+    },
+
+    closeSellModal() {
+        if (this.ui.sellModal) {
+            UIManager.hideModal(this.ui.sellModal);
+        }
+
+        this.selectedRod = null;
+
+        if (this.ui.priceInput) {
+            this.ui.priceInput.value = '';
+        }
+
+        this.renderSelectedRod();
+        this.updateSellSummary();
     },
 
     hideOverlays() {
@@ -60,6 +102,7 @@ const AuctionManager = {
     setSelectedRod(rod) {
         this.selectedRod = rod;
         this.renderSelectedRod();
+        this.updateSellSummary();
     },
 
     renderSelectedRod() {
@@ -85,6 +128,52 @@ const AuctionManager = {
             sellerLabel: 'Готово к продаже',
             priceLabel: previewRod.price ? `${this.formatNumber(previewRod.price)} 💰` : 'Цена'
         });
+    },
+
+    getFeeRate() {
+        return Number(window.AUCTION_LISTING_FEE_PERCENT ?? 0.01);
+    },
+
+    getMinFee() {
+        return Number(window.AUCTION_LISTING_MIN_FEE ?? 1);
+    },
+
+    getListingDurationHours() {
+        return Number(window.AUCTION_LISTING_DURATION_HOURS ?? 72);
+    },
+
+    calculateListingFee(price) {
+        if (!Number.isFinite(price) || price <= 0) {
+            return 0;
+        }
+
+        return Math.max(this.getMinFee(), Math.ceil(price * this.getFeeRate()));
+    },
+
+    formatFeeRate() {
+        const percent = this.getFeeRate() * 100;
+        return Number.isInteger(percent) ? `${percent}%` : `${percent.toFixed(2)}%`;
+    },
+
+    updateSellSummary() {
+        const price = Number(this.ui.priceInput?.value || 0);
+        const fee = this.calculateListingFee(price);
+
+        if (this.ui.pricePreview) {
+            this.ui.pricePreview.textContent = price > 0
+                ? `${this.formatNumber(price)} 💰`
+                : '—';
+        }
+
+        if (this.ui.feeAmount) {
+            this.ui.feeAmount.textContent = fee > 0
+                ? `${this.formatNumber(fee)} 💰`
+                : '—';
+        }
+
+        if (this.ui.feeNote) {
+            this.ui.feeNote.textContent = `Лот будет активен ${this.getListingDurationHours()} ч. Комиссия ${this.formatFeeRate()} списывается сразу. Минимум: ${this.formatNumber(this.getMinFee())} 💰.`;
+        }
     },
 
     async load() {
@@ -133,6 +222,7 @@ const AuctionManager = {
                 html += this.buildSlotHTML(listing, {
                     myLot: this.isMyListing(listing),
                     sellerLabel: this.getSellerLabel(listing, source),
+                    expiresAtTs: listing.expires_at_ts,
                     priceLabel: `${this.formatNumber(listing.price)} 💰`
                 });
             } else {
@@ -191,40 +281,21 @@ const AuctionManager = {
             myLot = false,
             selected = false,
             sellerLabel = '',
-            priceLabel = ''
+            priceLabel = '',
+            timeLabel = '',
+            expiresAtTs = null
         } = options;
 
-        const rod = listing;
-        const durability = Number(rod.durability ?? 0);
-        const gearScore = Number(rod.gear_score ?? 0);
-        const durabilityClass = this.getDurabilityClass(durability);
-        const durabilityValue = this.getDurabilityLabel(durability);
-        const classes = [
-            'inventory-slot',
-            'auction-slot',
-            myLot ? 'my-lot' : '',
-            selected ? 'selected-lot' : '',
-            myLot && !selected ? 'is-owned' : ''
-        ].filter(Boolean).join(' ');
-
-        const listingIdAttr = listing.id ? `data-listing-id="${this.escapeAttribute(String(listing.id))}"` : '';
-        const priceMarkup = priceLabel
-            ? `<div class="item-price">${this.escapeHtml(priceLabel)}</div>`
-            : '';
-        const sellerMarkup = sellerLabel
-            ? `<div class="item-seller">${this.escapeHtml(sellerLabel)}</div>`
-            : '';
-
-        return `
-            <div class="${classes}" ${listingIdAttr}>
-                ${priceMarkup}
-                <div class="item-icon">${this.escapeHtml(rod.emoji || '🎣')}</div>
-                <div class="item-name">${this.escapeHtml(rod.name || 'Удочка')}</div>
-                <div class="item-durability durability-${durabilityClass}">${this.escapeHtml(durabilityValue)}</div>
-                <div class="item-gear-score">⚙️ ${this.escapeHtml(String(gearScore))}</div>
-                ${sellerMarkup}
-            </div>
-        `;
+        return RodManager.buildSlotHTML(listing, {
+            slotType: 'auction',
+            myLot,
+            selected,
+            sellerLabel,
+            priceLabel,
+            timeLabel,
+            expiresAtTs,
+            listingId: listing.id
+        });
     },
 
     shouldUseBottomSheet() {
@@ -241,6 +312,9 @@ const AuctionManager = {
             extraMetaHTML: `
                 <div style="margin-top: 6px; font-size: 0.9em; color: #ffd700;">
                     💰 Цена: ${this.escapeHtml(this.formatNumber(listing.price))} | 👤 ${this.escapeHtml(this.getSellerLabel(listing, 'market'))}
+                </div>
+                <div style="margin-top: 4px; font-size: 0.85em; color: rgba(255,255,255,0.72);">
+                    ⏳ Осталось: ${this.escapeHtml(this.formatRemainingTime(listing))}
                 </div>
             `
         });
@@ -341,6 +415,10 @@ const AuctionManager = {
                     <span>Цена</span>
                     <strong>${this.escapeHtml(this.formatNumber(listing.price))} 💰</strong>
                 </div>
+                <div class="bottom-sheet-meta-pill">
+                    <span>Осталось</span>
+                    <strong>${this.escapeHtml(this.formatRemainingTime(listing))}</strong>
+                </div>
             `,
             statsElement: this.ui.bottomSheetStats,
             statsHTML: RodManager.buildBottomSheetStatsHTML(listing),
@@ -391,13 +469,6 @@ const AuctionManager = {
         return listing.seller_name || 'Игрок';
     },
 
-    getDurabilityClass(durability) {
-        if (durability === -1) return 'infinite';
-        if (durability <= 10) return 'low';
-        if (durability <= 50) return 'medium';
-        return 'high';
-    },
-
     getDurabilityLabel(durability) {
         return RodManager.getDurabilityLabel(durability);
     },
@@ -410,8 +481,93 @@ const AuctionManager = {
         return Number(value || 0).toLocaleString('ru-RU');
     },
 
+    getRemainingSeconds(listing) {
+        const expiresAtTs = Number(listing?.expires_at_ts || 0);
+        if (!expiresAtTs) {
+            return 0;
+        }
+
+        return Math.max(0, expiresAtTs - Math.floor(Date.now() / 1000));
+    },
+
+    formatRemainingTime(listing) {
+        const totalSeconds = this.getRemainingSeconds(listing);
+
+        if (totalSeconds <= 0) {
+            return 'Истекло';
+        }
+
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        if (hours > 0) {
+            return `${hours}ч ${String(minutes).padStart(2, '0')}м`;
+        }
+
+        return `${minutes}м ${String(seconds).padStart(2, '0')}с`;
+    },
+
+    startCountdownTicker() {
+        if (this.countdownTimerId) {
+            return;
+        }
+
+        this.countdownTimerId = window.setInterval(() => {
+            this.updateCountdownLabels();
+        }, 1000);
+    },
+
+    async reloadAfterExpiry() {
+        if (this.isReloadingExpiredListings || !this.ui.modal || this.ui.modal.classList.contains('hidden')) {
+            return;
+        }
+
+        this.isReloadingExpiredListings = true;
+
+        try {
+            await this.load();
+
+            if (typeof refreshInventory === 'function') {
+                await refreshInventory();
+            }
+        } finally {
+            this.isReloadingExpiredListings = false;
+        }
+    },
+
+    updateCountdownLabels() {
+        const countdownNodes = document.querySelectorAll('.auction-slot[data-expires-at-ts]');
+        let hasExpiredVisibleListing = false;
+
+        countdownNodes.forEach((slot) => {
+            const expiresAtTs = Number(slot.dataset.expiresAtTs || 0);
+            if (!expiresAtTs) {
+                return;
+            }
+
+            const remainingSeconds = Math.max(0, expiresAtTs - Math.floor(Date.now() / 1000));
+            const timerElement = slot.querySelector('.item-timer');
+
+            if (timerElement) {
+                timerElement.textContent = remainingSeconds > 0
+                    ? this.formatRemainingTime({ expires_at_ts: expiresAtTs })
+                    : 'Истекло';
+            }
+
+            if (remainingSeconds <= 0) {
+                hasExpiredVisibleListing = true;
+            }
+        });
+
+        if (hasExpiredVisibleListing) {
+            this.reloadAfterExpiry();
+        }
+    },
+
     async submitSelectedRod() {
         const price = Number(this.ui.priceInput?.value || 0);
+        const fee = this.calculateListingFee(price);
 
         if (!this.selectedRod) {
             Log.warning('Сначала выберите удочку в инвентаре.');
@@ -424,15 +580,18 @@ const AuctionManager = {
         }
 
         try {
-            await API.sellRodAtAuction(this.selectedRod.id, price);
-            Log.success(`Удочка "${this.selectedRod.name}" выставлена за ${price} 💰`);
-            this.selectedRod = null;
+            const result = await API.sellRodAtAuction(this.selectedRod.id, price);
+            const nextBalance = Number.isFinite(Number(result?.balance))
+                ? Number(result.balance)
+                : Number((typeof GameState !== 'undefined' ? GameState.balance : 0) || 0) - Number(result?.commission_fee ?? fee);
 
-            if (this.ui.priceInput) {
-                this.ui.priceInput.value = '';
+            if (typeof GameState !== 'undefined') {
+                GameState.balance = nextBalance;
             }
 
-            this.renderSelectedRod();
+            UIManager.updateBalance(nextBalance);
+            Log.success(`Удочка "${this.selectedRod.name}" выставлена за ${this.formatNumber(price)} 💰. Комиссия: ${this.formatNumber(result.commission_fee ?? fee)} 💰`);
+            this.closeSellModal();
             await this.load();
 
             if (typeof refreshInventory === 'function') {

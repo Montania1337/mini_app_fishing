@@ -12,6 +12,9 @@ DATABASE_DIR = DATABASE_FILE_PATH.parent
 # uvicorn main:app  --port 5000
 # Настройки экономики
 ROD_PRICE = 1
+AUCTION_LISTING_DURATION_HOURS = 72
+AUCTION_LISTING_FEE_PERCENT = 0.01
+AUCTION_LISTING_MIN_FEE = 1
 INVENTORY_SIZE = 20  # Максимальное количество удочек в инвентаре (3 ряда по 4)
 
 
