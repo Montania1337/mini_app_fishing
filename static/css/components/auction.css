@@ -143,28 +143,6 @@
     text-align: center;
 }
 
-.auction-bottom-sheet-meta {
-    display: grid;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-
-.auction-meta-pill {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    color: rgba(255, 255, 255, 0.82);
-    font-size: 0.9rem;
-}
-
-.auction-meta-pill strong {
-    color: #ffd700;
-}
-
 @media (max-width: 1024px) {
     .auction-grid {
         grid-template-columns: repeat(4, 1fr);
@@ -242,9 +220,6 @@
         font-size: 0.48rem;
     }
 
-    .auction-meta-pill {
-        font-size: 0.84rem;
-    }
 }
 
 @media (max-width: 360px) {

@@ -10,7 +10,6 @@ const AuctionManager = {
     listings: [],
     myListings: [],
     currentBottomSheet: null,
-    // propOrder: ['rod_reward_increase', 'xp', 'rod_luck_increase', 'speed', 'rod_power_increase', 'rod_piercing_increase', 'rod_crit_chance_increase'],
 
     init(uiElements) {
         this.ui = {
@@ -212,6 +211,9 @@ const AuctionManager = {
         const priceMarkup = priceLabel
             ? `<div class="item-price">${this.escapeHtml(priceLabel)}</div>`
             : '';
+        const sellerMarkup = sellerLabel
+            ? `<div class="item-seller">${this.escapeHtml(sellerLabel)}</div>`
+            : '';
 
         return `
             <div class="${classes}" ${listingIdAttr}>
@@ -220,6 +222,7 @@ const AuctionManager = {
                 <div class="item-name">${this.escapeHtml(rod.name || 'Удочка')}</div>
                 <div class="item-durability durability-${durabilityClass}">${this.escapeHtml(durabilityValue)}</div>
                 <div class="item-gear-score">⚙️ ${this.escapeHtml(String(gearScore))}</div>
+                ${sellerMarkup}
             </div>
         `;
     },
@@ -234,29 +237,13 @@ const AuctionManager = {
         this.hideContextMenu();
         this.hideBottomSheet();
 
-        const damageLabel = this.getDamageLabel(listing);
-        const rarityLabel = listing.rarity || 'common';
-        const upgradeLevel = Number(listing.upgrade_level || 0);
-        const propertiesHtml = this.buildPropertyStatsHTML(listing);
-
-        this.ui.tooltip.innerHTML = `
-            <div class="tooltip-header">
-                <h3 class="tooltip-name rarity-${this.escapeAttribute(rarityLabel)}">${this.escapeHtml(listing.name || 'Удочка')}</h3>
-                <div class="tooltip-damage" style="margin-top: 8px; color: #ff6b6b; font-weight: 600; font-size: 0.95em;">
-                    💥 Урон: ${this.escapeHtml(damageLabel)}
-                </div>
+        this.ui.tooltip.innerHTML = RodManager.buildTooltipHTML(listing, {
+            extraMetaHTML: `
                 <div style="margin-top: 6px; font-size: 0.9em; color: #ffd700;">
                     💰 Цена: ${this.escapeHtml(this.formatNumber(listing.price))} | 👤 ${this.escapeHtml(this.getSellerLabel(listing, 'market'))}
                 </div>
-                <div style="margin-top: 6px; font-size: 0.85em; color: rgba(255,255,255,0.65);">
-                    Редкость: ${this.escapeHtml(String(rarityLabel))} | Улучшение: +${this.escapeHtml(String(upgradeLevel))}
-                </div>
-            </div>
-            <div class="tooltip-stats">
-                <div class="tooltip-stat-header">Характеристики</div>
-                ${propertiesHtml}
-            </div>
-        `;
+            `
+        });
 
         this.ui.tooltip.classList.remove('hidden');
         TooltipManager.currentTooltip = this.ui.tooltip;
@@ -335,206 +322,61 @@ const AuctionManager = {
         this.hideTooltip();
         this.hideContextMenu();
 
+        const sellerLabel = this.getSellerLabel(listing, source);
         const action = this.isMyListing(listing) || source === 'mine'
             ? { id: 'cancel', label: 'Снять лот', danger: true }
             : { id: 'buy', label: 'Купить', danger: false };
 
-        if (this.ui.bottomSheetTitle) {
-            this.ui.bottomSheetTitle.textContent = listing.name || 'Лот';
-        }
-
-        if (this.ui.bottomSheetMeta) {
-            this.ui.bottomSheetMeta.innerHTML = `
-                <div class="auction-meta-pill">
+        const result = BottomSheetManager.show({
+            element: this.ui.bottomSheet,
+            titleElement: this.ui.bottomSheetTitle,
+            title: listing.name || 'Лот',
+            metaElement: this.ui.bottomSheetMeta,
+            metaHTML: `
+                <div class="bottom-sheet-meta-pill">
                     <span>Продавец</span>
-                    <strong>${this.escapeHtml(this.getSellerLabel(listing, 'market'))}</strong>
+                    <strong>${this.escapeHtml(sellerLabel)}</strong>
                 </div>
-                <div class="auction-meta-pill">
+                <div class="bottom-sheet-meta-pill">
                     <span>Цена</span>
                     <strong>${this.escapeHtml(this.formatNumber(listing.price))} 💰</strong>
                 </div>
-            `;
-        }
-
-        if (this.ui.bottomSheetStats) {
-            this.ui.bottomSheetStats.innerHTML = this.buildBottomSheetStatsHTML(listing);
-        }
-
-        if (this.ui.bottomSheetAction) {
-            const actionButton = this.ui.bottomSheetAction.cloneNode(true);
-            actionButton.id = this.ui.bottomSheetAction.id;
-            actionButton.textContent = action.label;
-            actionButton.className = action.danger ? 'action-btn danger' : 'action-btn';
-            this.ui.bottomSheetAction.parentNode.replaceChild(actionButton, this.ui.bottomSheetAction);
-            this.ui.bottomSheetAction = actionButton;
-            this.ui.bottomSheetAction.addEventListener('click', async (event) => {
+            `,
+            statsElement: this.ui.bottomSheetStats,
+            statsHTML: RodManager.buildBottomSheetStatsHTML(listing),
+            actions: [
+                {
+                    element: this.ui.bottomSheetAction,
+                    id: action.id,
+                    label: action.label,
+                    danger: action.danger
+                }
+            ],
+            onAction: async (actionId, event) => {
                 event.stopPropagation();
                 this.hideBottomSheet();
-                await this.handleAction(action.id, listing);
-            });
+                await this.handleAction(actionId, listing);
+            },
+            onClose: () => this.hideBottomSheet()
+        });
+
+        if (result.actionElements[0]) {
+            this.ui.bottomSheetAction = result.actionElements[0];
         }
 
-        this.ui.bottomSheet.classList.remove('hidden');
         this.currentBottomSheet = { element: this.ui.bottomSheet, listing };
-        this.bindBottomSheetSwipe();
-    },
-
-    bindBottomSheetSwipe() {
-        if (!this.ui.bottomSheet) return;
-
-        let touchStartY = 0;
-        const swipeHandler = (event) => {
-            if (event.type === 'touchstart') {
-                touchStartY = event.touches[0].clientY;
-                return;
-            }
-
-            const touchEndY = event.changedTouches[0].clientY;
-            if (touchEndY - touchStartY > 50) {
-                this.hideBottomSheet();
-            }
-        };
-
-        if (this._auctionSwipeStartHandler) {
-            this.ui.bottomSheet.removeEventListener('touchstart', this._auctionSwipeStartHandler);
-        }
-
-        if (this._auctionSwipeEndHandler) {
-            this.ui.bottomSheet.removeEventListener('touchend', this._auctionSwipeEndHandler);
-        }
-
-        this._auctionSwipeStartHandler = (event) => swipeHandler(event);
-        this._auctionSwipeEndHandler = (event) => swipeHandler(event);
-
-        this.ui.bottomSheet.addEventListener('touchstart', this._auctionSwipeStartHandler);
-        this.ui.bottomSheet.addEventListener('touchend', this._auctionSwipeEndHandler);
     },
 
     hideBottomSheet() {
         if (this.currentBottomSheet) {
-            this.currentBottomSheet.element.classList.add('hidden');
+            BottomSheetManager.hide(this.currentBottomSheet.element);
             this.currentBottomSheet = null;
             return;
         }
 
         if (this.ui.bottomSheet) {
-            this.ui.bottomSheet.classList.add('hidden');
+            BottomSheetManager.hide(this.ui.bottomSheet);
         }
-    },
-
-    buildBottomSheetStatsHTML(listing) {
-        const damageLabel = this.getDamageLabel(listing);
-        const durabilityLabel = this.getDurabilityLabel(Number(listing.durability ?? 0));
-        const rarityLabel = listing.rarity || 'common';
-        const upgradeLevel = Number(listing.upgrade_level || 0);
-
-        const items = [
-            `
-                <div class="bottom-sheet-stat-item">
-                    <div class="bottom-sheet-stat-title">
-                        <span>Урон</span>
-                        <span class="bottom-sheet-stat-value">${this.escapeHtml(damageLabel)}</span>
-                    </div>
-                    <div class="bottom-sheet-stat-tier">Редкость: ${this.escapeHtml(String(rarityLabel))}</div>
-                </div>
-            `,
-            `
-                <div class="bottom-sheet-stat-item">
-                    <div class="bottom-sheet-stat-title">
-                        <span>Прочность</span>
-                        <span class="bottom-sheet-stat-value">${this.escapeHtml(durabilityLabel)}</span>
-                    </div>
-                    <div class="bottom-sheet-stat-tier">Улучшение: +${this.escapeHtml(String(upgradeLevel))}</div>
-                </div>
-            `
-        ];
-
-        return items.concat(this.buildPropertyStatsBlocks(listing)).join('');
-    },
-
-    buildPropertyStatsHTML(listing) {
-        const properties = this.parseProperties(listing);
-        const blocks = [];
-
-        for (const propName of propOrder) {
-            if (!(propName in properties)) continue;
-
-            const tier = Number(properties[propName]);
-            const tierDesc = tier <= 3 ? 'низкий' : (tier <= 6 ? 'средний' : 'высокий');
-            const value = typeof RodManager !== 'undefined' && RodManager.formatPropertyValue
-                ? RodManager.formatPropertyValue(propName, tier)
-                : tier;
-            const name = window.ROD_PROPERTY_NAMES?.[propName] || propName;
-            const desc = window.ROD_PROPERTY_DESCRIPTIONS?.[propName] || '';
-
-            blocks.push(`
-                <div class="tooltip-stat-item" data-tier="${this.escapeAttribute(String(tier))}">
-                    <div class="tooltip-stat-title">
-                        <span>${this.escapeHtml(name)}</span>
-                        <span class="tooltip-stat-value">${this.escapeHtml(String(value))}</span>
-                    </div>
-                    <div class="tooltip-stat-tier">Уровень ${this.escapeHtml(String(tier))}/10 (${this.escapeHtml(tierDesc)})</div>
-                    <div class="tooltip-stat-desc">${this.escapeHtml(desc)}</div>
-                </div>
-            `);
-        }
-
-        if (!blocks.length) {
-            return `
-                <div class="tooltip-stat-item">
-                    <div class="tooltip-stat-title">
-                        <span>Доп. свойства</span>
-                        <span class="tooltip-stat-value">Нет</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        return blocks.join('');
-    },
-
-    buildPropertyStatsBlocks(listing) {
-        const properties = this.parseProperties(listing);
-        const blocks = [];
-
-        for (const propName of propOrder) {
-            if (!(propName in properties)) continue;
-
-            const tier = Number(properties[propName]);
-            const tierDesc = tier <= 3 ? 'низкий' : (tier <= 6 ? 'средний' : 'высокий');
-            const value = typeof RodManager !== 'undefined' && RodManager.formatPropertyValue
-                ? RodManager.formatPropertyValue(propName, tier)
-                : tier;
-            const name = window.ROD_PROPERTY_NAMES?.[propName] || propName;
-            const desc = window.ROD_PROPERTY_DESCRIPTIONS?.[propName] || '';
-
-            blocks.push(`
-                <div class="bottom-sheet-stat-item">
-                    <div class="bottom-sheet-stat-title">
-                        <span>${this.escapeHtml(name)}</span>
-                        <span class="bottom-sheet-stat-value">${this.escapeHtml(String(value))}</span>
-                    </div>
-                    <div class="bottom-sheet-stat-tier">Уровень ${this.escapeHtml(String(tier))}/10 (${this.escapeHtml(tierDesc)})</div>
-                    <div class="bottom-sheet-stat-desc">${this.escapeHtml(desc)}</div>
-                </div>
-            `);
-        }
-
-        return blocks;
-    },
-
-    parseProperties(rod) {
-        if (!rod?.properties) return {};
-
-        if (typeof rod.properties === 'string') {
-            try {
-                return JSON.parse(rod.properties);
-            } catch (error) {
-                return {};
-            }
-        }
-
-        return rod.properties;
     },
 
     isMyListing(listing) {
@@ -557,18 +399,11 @@ const AuctionManager = {
     },
 
     getDurabilityLabel(durability) {
-        return durability === -1 ? '♾️' : String(durability);
+        return RodManager.getDurabilityLabel(durability);
     },
 
     getDamageLabel(rod) {
-        if (typeof RodManager !== 'undefined' && RodManager.calculateEffectiveDamage) {
-            const damage = RodManager.calculateEffectiveDamage(rod);
-            return `${damage.effective.min}-${damage.effective.max}`;
-        }
-
-        const minDamage = Number(rod.min_damage ?? rod.damage_min ?? 0);
-        const maxDamage = Number(rod.max_damage ?? rod.damage_max ?? 0);
-        return `${minDamage}-${maxDamage}`;
+        return RodManager.getDamageLabel(rod);
     },
 
     formatNumber(value) {
@@ -592,11 +427,14 @@ const AuctionManager = {
             await API.sellRodAtAuction(this.selectedRod.id, price);
             Log.success(`Удочка "${this.selectedRod.name}" выставлена за ${price} 💰`);
             this.selectedRod = null;
+
             if (this.ui.priceInput) {
                 this.ui.priceInput.value = '';
             }
+
             this.renderSelectedRod();
             await this.load();
+
             if (typeof refreshInventory === 'function') {
                 await refreshInventory();
             }
@@ -622,6 +460,7 @@ const AuctionManager = {
             UIManager.updateBalance(result.balance);
             Log.success(`Куплена удочка "${result.rod_name}" у игрока ${result.seller_name}`);
             await this.load();
+
             if (typeof refreshInventory === 'function') {
                 await refreshInventory();
             }
@@ -635,6 +474,7 @@ const AuctionManager = {
             await API.cancelAuctionListing(Number(listingId));
             Log.info('Лот снят с аукциона.');
             await this.load();
+
             if (typeof refreshInventory === 'function') {
                 await refreshInventory();
             }

@@ -11,7 +11,7 @@
     min-width: 240px;
     max-width: 300px;
     z-index: 20000;
-    pointer-events: auto;
+    pointer-events: none;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
     animation: tooltipFade 0.15s ease-out;
     display: block !important;

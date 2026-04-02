@@ -9,7 +9,7 @@ DATABASE_FILE_PATH = pathlib.Path(os.getenv('DATABASE_PATH', str(DEFAULT_DATABAS
 DATABASE_DIR = DATABASE_FILE_PATH.parent
 
 # app/config.py
-#  uvicorn main:app  --port 5000
+# uvicorn main:app  --port 5000
 # Настройки экономики
 ROD_PRICE = 1
 INVENTORY_SIZE = 20  # Максимальное количество удочек в инвентаре (3 ряда по 4)

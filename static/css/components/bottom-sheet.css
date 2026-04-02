@@ -85,6 +85,32 @@
     gap: 8px;
 }
 
+.bottom-sheet-meta {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.bottom-sheet-meta:empty {
+    display: none;
+}
+
+.bottom-sheet-meta-pill {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.9rem;
+}
+
+.bottom-sheet-meta-pill strong {
+    color: #ffd700;
+}
+
 .bottom-sheet-stat-item {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(100, 150, 255, 0.2);
@@ -172,4 +198,10 @@
     background: linear-gradient(135deg, rgba(255, 100, 100, 0.3) 0%, rgba(255, 100, 100, 0.2) 100%);
     border-color: rgba(255, 100, 100, 0.6);
     color: rgba(255, 180, 150, 1);
+}
+
+@media (max-width: 480px) {
+    .bottom-sheet-meta-pill {
+        font-size: 0.84rem;
+    }
 }

@@ -92,33 +92,6 @@ def generate_random_rod():
     min_damage = FISHING_ROD_BASES[fish_rod_base]["damage"][0]
     max_damage = FISHING_ROD_BASES[fish_rod_base]["damage"][1]
 
-    # if avg_weight > 700:
-    #     rarity = "common"
-    #     durability = random.randint(50, 150)
-    #     # Базовый урон для Common: 1-3
-    #     min_damage = 1
-    #     max_damage = 3
-    # elif avg_weight > 500:
-    #     rarity = "uncommon"
-    #     durability = random.randint(150, 300)
-    #     min_damage = 2
-    #     max_damage = 5
-    # elif avg_weight > 300:
-    #     rarity = "rare"
-    #     durability = random.randint(300, 600)
-    #     min_damage = 3
-    #     max_damage = 7
-    # elif avg_weight > 100:
-    #     rarity = "epic"
-    #     durability = random.randint(600, 1000)
-    #     min_damage = 4
-    #     max_damage = 10
-    # else:
-    #     rarity = "legendary"
-    #     durability = random.randint(1000, 2000)
-    #     min_damage = 5
-    #     max_damage = 15
-    
     rod_name = random.choice(ROD_NAMES)
 
     return {
