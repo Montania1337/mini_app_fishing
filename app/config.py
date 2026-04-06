@@ -27,6 +27,21 @@ class RodKeyWords(str, Enum):
     ROD_DURABILITY_INCREASE = "rod_durability_increase"
     ROD_PIERCING_INCREASE = "rod_piercing_increase"
 
+# Пресет для тестов афиксов
+ADMIN_ROD = None
+#{
+#    "name": "Test Rod",
+#    "properties": {
+#        RodKeyWords.ROD_LUCK_INCREASE: 10,
+#        RodKeyWords.ROD_POWER_INCREASE: 10,
+#        RodKeyWords.ROD_DURABILITY_INCREASE: 10,
+#    },
+#    "durability": 9999,
+#    "min_damage": 500,
+#    "max_damage": 1000,
+#    "gear_score": 999,
+#}
+
 
 ROD_UPGRADE_SYSTEM = {
     1: {"damage_bonus": 1, "cost": 10, "success_chance": 100},    # +1 урон, 100% шанс
@@ -39,16 +54,6 @@ ROD_UPGRADE_SYSTEM = {
     8: {"damage_bonus": 3, "cost": 60, "success_chance": 50},     # +3 урона, 50% шанс
     9: {"damage_bonus": 3, "cost": 80, "success_chance": 40},     # +3 урона, 40% шанс
     10: {"damage_bonus": 4, "cost": 100, "success_chance": 30},   # +4 урона, 30% шанс
-}
-
-# Редкости 
-RARITIES = {
-    "trash":    {"chance": 0, "mult": 1.0, "label": "Мусор", "color": "#6D6D6D"},
-    "common":    {"chance": 60, "mult": 1.0, "label": "Обычная", "color": "#bdc3c7"},
-    "uncommon":  {"chance": 25, "mult": 1.3, "label": "Необычная", "color": "#2ecc71"},
-    "rare":      {"chance": 10, "mult": 1.8, "label": "Редкая", "color": "#3498db"},
-    "epic":      {"chance": 4,  "mult": 2.5, "label": "Эпическая", "color": "#9b59b6"},
-    "legendary": {"chance": 1,  "mult": 5.0, "label": "Легендарная", "color": "#f1c40f"},
 }
 
 
@@ -106,7 +111,7 @@ COMBAT_PROPERTIES = {
             7: {"value": 0.75, "rarity_weight": 80, "gs_value": 14},
             8: {"value": 1.2,  "rarity_weight": 40, "gs_value": 18},
             9: {"value": 1.7, "rarity_weight": 15, "gs_value": 24},
-            10: {"value": 2.3, "rarity_weight": 3, "gs_value": 32},
+            10: {"value": 2.5, "rarity_weight": 3, "gs_value": 32},
         },
         "rarity_weight" : 500
     },
@@ -218,21 +223,25 @@ FISHING_ROD_BASES_WEIGHTS = [
 # Рыбы
 FISHES = [
     {"name": "Карась", "emoji": "🐟", "rarity": "common", "base_price": 10, "base_hp": 12, "rarity_weight": 500},
-    {"name": "Окунь", "emoji": "🐠", "rarity": "uncommon", "base_price": 15, "base_hp": 20, "rarity_weight": 300},
     {"name": "Креветка", "emoji": "🦐", "rarity": "common", "base_price": 15, "base_hp": 5, "rarity_weight": 200},
-    {"name": "Краб", "emoji": "🦀", "rarity": "rare", "base_price": 35, "base_hp": 20, "rarity_weight": 150},
-    {"name": "Ракушка", "emoji": "🐚", "rarity": "epic", "base_price": 15, "base_hp": 5, "rarity_weight": 150},
     {"name": "Ботинок", "emoji": "🥾", "rarity": "common", "base_price": 2, "base_hp": 10, "rarity_weight": 80},
-    {"name": "Фугу", "emoji": "🐡", "rarity": "rare", "base_price": 25, "base_hp": 35, "rarity_weight": 80},
-    {"name": "Золотая рыбка", "emoji": "✨", "rarity": "epic", "base_price": 100, "base_hp": 75, "rarity_weight": 35},
-    {"name": "Акула", "emoji": "🦈", "rarity": "epic", "base_price": 150, "base_hp": 100, "rarity_weight": 15},
     {"name": "Водоросли", "emoji": "🌿", "rarity": "common", "base_price": 2, "base_hp": 5, "rarity_weight": 5},
     {"name": "Пластиковый стаканчик", "emoji": "🥤", "rarity": "common", "base_price": 2, "base_hp": 5, "rarity_weight": 5},
+
+    {"name": "Окунь", "emoji": "🐠", "rarity": "uncommon", "base_price": 15, "base_hp": 20, "rarity_weight": 300},
     {"name": "Фотоаппарат", "emoji": "📷", "rarity": "uncommon", "base_price": 30, "base_hp": 5, "rarity_weight": 5},
+
+    {"name": "Краб", "emoji": "🦀", "rarity": "rare", "base_price": 35, "base_hp": 20, "rarity_weight": 150},
+    {"name": "Фугу", "emoji": "🐡", "rarity": "rare", "base_price": 25, "base_hp": 35, "rarity_weight": 80},
     {"name": "Ключ", "emoji": "🗝️", "rarity": "rare", "base_price": 50, "base_hp": 5, "rarity_weight": 3},
-    {"name": "Кракен", "emoji": "🦑", "rarity": "legendary", "base_price": 500, "base_hp": 200, "rarity_weight": 3},
     {"name": "Лотерейный билет", "emoji": "🎟️", "rarity": "rare", "base_price": 60, "base_hp": 5, "rarity_weight": 2},
+
+    {"name": "Ракушка", "emoji": "🐚", "rarity": "epic", "base_price": 15, "base_hp": 5, "rarity_weight": 150},
+    {"name": "Золотая рыбка", "emoji": "✨", "rarity": "epic", "base_price": 100, "base_hp": 75, "rarity_weight": 35},
+    {"name": "Акула", "emoji": "🦈", "rarity": "epic", "base_price": 150, "base_hp": 100, "rarity_weight": 15},
     {"name": "Кольцо", "emoji": "💍", "rarity": "epic", "base_price": 180, "base_hp": 5, "rarity_weight": 1},
+
+    {"name": "Кракен", "emoji": "🦑", "rarity": "legendary", "base_price": 500, "base_hp": 200, "rarity_weight": 3},
     {"name": "Молюск", "emoji": "🦪", "rarity": "legendary", "base_price": 150, "base_hp": 5, "rarity_weight": 1},
 ]
 

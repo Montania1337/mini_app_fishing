@@ -1,18 +1,74 @@
 import random
 import json
-from app.config import RodKeyWords, FISHES, RARITIES, ROD_PROPERTIES, FISHING_ROD_BASES, FISHING_ROD_BASES_WEIGHTS, ACHIEVEMENT_RULES, ROD_NAMES, FISH_PREFIXES, FISH_SUFFIXES, ACHIEVEMENTS_LIST
+import math
+from copy import deepcopy
+from app.config import ADMIN_ROD, RodKeyWords, FISHES, ROD_PROPERTIES, FISHING_ROD_BASES, FISHING_ROD_BASES_WEIGHTS, ACHIEVEMENT_RULES, ROD_NAMES, FISH_PREFIXES, FISH_SUFFIXES, ACHIEVEMENTS_LIST
 from app import database
 
-def weighted_choice(items):
-    """Универсальная функция выбора с весами"""
-    total = sum(RARITIES[i["rarity"]]["chance"] for i in items)
-    r = random.uniform(0, total)
-    upto = 0
-    for item in items:
-        upto += RARITIES[item["rarity"]]["chance"]
-        if upto >= r:
-            return item
-    return items[0]
+def get_rod_properties(rod: dict) -> dict:
+    """Возвращает свойства удочки в виде словаря."""
+    if isinstance(rod.get('properties'), str):
+        try:
+            return json.loads(rod['properties'])
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return {}
+    return rod.get('properties', {}) or {}
+
+
+def roll_fish_parts(luck_bonus: float = 0.0):
+    """
+    выбирает базовую рыбу, префикс и суффикс с учетом лак бонуса
+    """
+    def pick_with_luck(items, weight_key: str = "rarity_weight"):
+        if not items:
+            raise ValueError("Items list is empty")
+
+        base_weights = [max(float(item.get(weight_key, 1)), 0.1) for item in items]
+        max_weight = max(base_weights)
+        adjusted_weights = []
+
+        for base_weight in base_weights:
+            adjusted_weight = base_weight
+            if luck_bonus > 0 and max_weight > 0:
+                rarity_boost = max(math.sqrt(max_weight / base_weight) - 1.0, 0.0)
+                adjusted_weight = max(base_weight * (1 + luck_bonus * rarity_boost), 0.001)
+            adjusted_weights.append(adjusted_weight)
+
+        selected_index = random.choices(range(len(items)), weights=adjusted_weights, k=1)[0]
+        return {
+            "item": items[selected_index],
+            "base_weight": base_weights[selected_index],
+            "adjusted_weight": adjusted_weights[selected_index],
+        }
+
+    fish_roll = pick_with_luck(FISHES)
+    prefix_roll = pick_with_luck(FISH_PREFIXES)
+    suffix_roll = pick_with_luck(FISH_SUFFIXES)
+
+    selected_fish = fish_roll["item"].copy()
+    prefix = prefix_roll["item"]
+    suffix = suffix_roll["item"]
+
+    roll_debug = {
+        "fish": {
+            "name": selected_fish["name"],
+            "rarity": selected_fish.get("rarity"),
+            "base_weight": fish_roll["base_weight"],
+            "adjusted_weight": fish_roll["adjusted_weight"],
+        },
+        "prefix": {
+            "name": prefix["name"] or "<empty prefix>",
+            "base_weight": prefix_roll["base_weight"],
+            "adjusted_weight": prefix_roll["adjusted_weight"],
+        },
+        "suffix": {
+            "name": suffix["name"] or "<empty suffix>",
+            "base_weight": suffix_roll["base_weight"],
+            "adjusted_weight": suffix_roll["adjusted_weight"],
+        },
+    }
+
+    return selected_fish, prefix, suffix, roll_debug
 
 def generate_starter_rod(user_id: int): #Работает???
     """Выдает стартовую удочку, если у игрока нет инвентаря"""
@@ -104,37 +160,14 @@ def generate_random_rod():
         "gear_score": gear_score
     }
 
-    # return {
-    #     "name": "Удочка тысячи истин",
-    #     "rarity": "legendary",
-    #     "properties": properties,
-    #     "durability": 9999999999,
-    #     "min_damage": 50,
-    #     "max_damage": 150,
-    #     "gear_score": 9999
-    # }
 
-
-
-def get_random_modifier(modifiers):
-    total = sum(m["rarity_weight"] for m in modifiers)
-    r = random.uniform(0, total)
-    upto = 0
-    for m in modifiers:
-        upto += m["rarity_weight"]
-        if upto >= r:
-            return m
-    return modifiers[0]
+def generate_admin_rod():
+    if ADMIN_ROD:
+        return deepcopy(ADMIN_ROD)
+    return generate_random_rod()
 
 def catch_fish_logic(rod: dict):
-    properties = {}
-    if isinstance(rod.get('properties'), str):
-        try:
-            properties = json.loads(rod['properties'])
-        except:
-            properties = {}
-    else:
-        properties = rod.get('properties', {})
+    properties = get_rod_properties(rod)
     
     luck_bonus = 0.0
     reward_mult = 1.0
@@ -152,36 +185,15 @@ def catch_fish_logic(rod: dict):
         tier = properties[RodKeyWords.ROD_CRIT_CHANCE_INCREASE]
         crit_chance = ROD_PROPERTIES[RodKeyWords.ROD_CRIT_CHANCE_INCREASE]['tiers'][tier]['value']
     
-    # MARK: мы думали что это слои рандома, но мы поняли что тут происходит и это "немножко странно" (с) Миша
-    pool = []
-    for fish in FISHES:
-        rarity_data = RARITIES[fish["rarity"]]
-        chance = rarity_data["chance"]
-        if fish["rarity"] in ["rare", "epic", "legendary"]:
-            chance *= (1 + luck_bonus)
-        pool.append({**fish, "calc_chance": chance})
-        
-    total_chance = sum(x["calc_chance"] for x in pool)
-    r = random.uniform(0, total_chance)
-    upto = 0
-    selected_fish = pool[0]
-    for item in pool:
-        upto += item["calc_chance"]
-        if upto >= r:
-            selected_fish = item.copy()
-            break
+  
 
-    prefix = get_random_modifier(FISH_PREFIXES)
-    suffix = get_random_modifier(FISH_SUFFIXES)
+    selected_fish, prefix, suffix, roll_debug = roll_fish_parts(luck_bonus)
 
     s_name = f" {suffix['name']}" if suffix['name'] else ""
     full_name = f"{prefix['name']} {selected_fish['name']}{s_name}".strip()
     
     base_price = selected_fish["base_price"]
-    rarity_mult = RARITIES[selected_fish["rarity"]]["mult"]
-    
-
-    total_mult = rarity_mult * reward_mult * prefix["mult"] * suffix["mult"]
+    total_mult = reward_mult * prefix["mult"] * suffix["mult"]
     
 
     final_reward = int(base_price * total_mult)
@@ -189,6 +201,19 @@ def catch_fish_logic(rod: dict):
     if is_crit:
         final_reward = int(final_reward * 2.5)  # Крит наносит 2.5x урона
 
+    print(
+        f"[catch-roll] luck_bonus={luck_bonus} "
+        f"fish={roll_debug['fish']['name']}({roll_debug['fish']['rarity']}) "
+        f"fish_base_weight={roll_debug['fish']['base_weight']:.3f} "
+        f"fish_adjusted_weight={roll_debug['fish']['adjusted_weight']:.3f} "
+        f"prefix={roll_debug['prefix']['name']} "
+        f"prefix_base_weight={roll_debug['prefix']['base_weight']:.3f} "
+        f"prefix_adjusted_weight={roll_debug['prefix']['adjusted_weight']:.3f} "
+        f"suffix={roll_debug['suffix']['name']} "
+        f"suffix_base_weight={roll_debug['suffix']['base_weight']:.3f} "
+        f"suffix_adjusted_weight={roll_debug['suffix']['adjusted_weight']:.3f}"
+    )
+# Поменять надо на что-то умное
     if total_mult >= 50:
         display_rarity = "mythic"
     elif total_mult >= 15:
@@ -242,6 +267,45 @@ def catch_fish_logic(rod: dict):
 
 
 # Чек достижений
+def strike_fish_logic(user_id: int, current_fish: dict):
+    """
+    Серверная логика удара по рыбе.
+    Важные данные боя и поимки считаются на сервере, а не на фронтенде.
+    """
+    if not user_id:
+        raise ValueError("Не указан user_id")
+
+    fish_state = current_fish.get(user_id)
+    if not fish_state:
+        raise ValueError("Нет активной рыбы для боя")
+
+    damage = calculate_strike_damage(fish_state["active_rod"])
+    fish_state["hp"] = max(0, fish_state["hp"] - damage)
+    is_alive = fish_state["hp"] > 0
+
+    response = {
+        "damage": damage,
+        "hp": fish_state["hp"],
+        "max_hp": fish_state["max_hp"],
+        "is_alive": is_alive,
+    }
+
+    if is_alive:
+        return response
+
+    reward = fish_state["reward"]
+    new_balance = database.update_balance(user_id, reward)
+    database.update_max_catch(user_id, reward)
+    database.increment_total_caught(user_id)
+
+    response["reward"] = reward
+    response["balance"] = new_balance
+    response["new_achievements"] = check_and_unlock_achievements(user_id) or []
+
+    del current_fish[user_id]
+    return response
+
+
 def check_and_unlock_achievements(user_id: int):
     stats = database.get_player_stats(user_id)
     rods = database.get_user_rods(user_id)
@@ -326,25 +390,15 @@ def calculate_strike_damage(rod: dict):
     """
     try:
         # Парсим свойства
-        properties = {}
-        if isinstance(rod.get('properties'), str):
-            try:
-                properties = json.loads(rod['properties'])
-            except:
-                properties = {}
-        else:
-            properties = rod.get('properties', {})
+        properties = get_rod_properties(rod)
         
         # Получаем базовый диапазон из удочки
         min_damage = rod.get('min_damage', 1)
         max_damage = rod.get('max_damage', 3)
         
-        print(rod)
-        print(min_damage, max_damage)
-
         damage_range = range(min_damage, max_damage + 1)
         weights = []
-        for i, dmg in enumerate(damage_range):
+        for dmg in damage_range:
             relative_pos = (dmg - min_damage) / max(1, (max_damage - min_damage))
             weight = (1 - relative_pos * 0.7) ** 2  # 70% падение от начала к концу
             weights.append(max(1, weight))  # Минимум 1 чтобы не было 0
@@ -388,9 +442,18 @@ def calculate_strike_damage(rod: dict):
                 print(f"Ошибка при обработке " + RodKeyWords.ROD_POWER_INCREASE + " в damage: {e}")
         
         # damage = int(base_damage * reward_mult * power_mult) + crit_bonus
-        damage = int(base_damage * power_mult * crit_bonus)
-        print(damage)
-        return max(1, damage)
+        damage = max(1, int(base_damage * power_mult * crit_bonus))
+
+        print(
+            f"[strike] rod_id={rod.get('id')} "
+            f"user_id={rod.get('user_id')} "
+            f"properties={properties} "
+            f"min_damage={min_damage} "
+            f"max_damage={max_damage} "
+            f"damage={damage}"
+        )
+
+        return damage
     except Exception as e:
         print(f"Ошибка в calculate_strike_damage: {e}")
         import traceback

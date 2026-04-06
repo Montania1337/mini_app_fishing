@@ -38,7 +38,6 @@ async def get_constants():
         "AUCTION_LISTING_FEE_PERCENT": config.AUCTION_LISTING_FEE_PERCENT,
         "AUCTION_LISTING_MIN_FEE": config.AUCTION_LISTING_MIN_FEE,
         "FISHES": config.FISHES,
-        "RARITIES": config.RARITIES,
         "FISH_PREFIXES": config.FISH_PREFIXES,
         "FISH_SUFFIXES": config.FISH_SUFFIXES,
     }
@@ -127,45 +126,8 @@ async def strike_fish(payload: dict):
         if user_id not in current_fish:
             raise HTTPException(status_code=400, detail="Нет активной рыбы для боя")
         
-        fish_state = current_fish[user_id]
-        rod = fish_state["active_rod"]
-        fish_data = fish_state["fish_data"]
-        
-        damage = services.calculate_strike_damage(rod)
-        
-        fish_state["hp"] -= damage
+        return services.strike_fish_logic(user_id, current_fish)
 
-        is_alive = fish_state["hp"] > 0
-        
-        response = {
-            "damage": damage,
-            "hp": max(0, fish_state["hp"]),
-            "max_hp": fish_state["max_hp"],
-            "is_alive": is_alive,
-        }
-        
-
-        if not is_alive:
-            reward = fish_state["reward"]
-            
-            # Обновляем баланс
-            new_balance = database.update_balance(user_id, reward)
-            
-            # Обновляем статистику
-            database.update_max_catch(user_id, reward)
-            database.increment_total_caught(user_id)
-            
-            # Проверяем достижения
-            new_achievements = services.check_and_unlock_achievements(user_id)
-            
-            response["reward"] = reward
-            response["balance"] = new_balance
-            response["new_achievements"] = new_achievements if new_achievements else []
-            
-            # Удаляем рыбу из памяти
-            del current_fish[user_id]
-        
-        return response
     except HTTPException:
         raise
     except Exception as e:
@@ -197,7 +159,7 @@ async def buy_rod(payload: dict):
             
         new_balance = database.update_balance(user_id, -config.ROD_PRICE)
         
-        new_rod = services.generate_random_rod()
+        new_rod = services.generate_admin_rod()
         rod_id = database.add_rod(user_id, new_rod)
         
         new_rod['id'] = rod_id
