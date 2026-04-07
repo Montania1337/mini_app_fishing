@@ -11,16 +11,74 @@
 
 /* Header */
 header {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
+    gap: 12px;
     margin-bottom: 24px;
+}
+
+.user-info {
+    justify-self: start;
+    min-width: 0;
 }
 
 #username {
     font-size: 1.2rem;
     font-weight: 700;
     margin-left: 12px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.server-time-widget {
+    justify-self: center;
+    min-width: 118px;
+    padding: 8px 14px 10px;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+        var(--secondary-bg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+    text-align: center;
+}
+
+.server-time-widget[data-mode="night"] {
+    background:
+        linear-gradient(180deg, rgba(106, 127, 255, 0.2), rgba(255, 255, 255, 0.04)),
+        var(--secondary-bg);
+}
+
+.server-time-meta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 2px;
+    font-size: 0.72rem;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.server-time-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.server-time-label {
+    font-weight: 700;
+}
+
+.server-time-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
 }
 
 .balance-container {
@@ -33,7 +91,8 @@ header {
     font-weight: 600;
 
     margin-right: 12px;
-    width: fit-content; 
+    width: fit-content;
+    justify-self: end;
 }
 
 /* Main content */
@@ -93,7 +152,7 @@ main {
     gap: 10px;
 }
 
-.log-item span {
+.log-time {
     font-size: 0.75rem;
     opacity: 0.5;
     font-family: monospace;
@@ -170,10 +229,6 @@ main {
     position: absolute;
     top: 10px;
     right: 10px;
-
-    font-size: 0.8rem;
-    opacity: 0.4;
-    font-family: monospace;
 }
 
 .log-item.success {
@@ -192,6 +247,10 @@ main {
 
 .log-item.rarity-common {
     border-left-color: var(--rarity-common);
+}
+
+.log-item.rarity-uncommon {
+    border-left-color: var(--rarity-uncommon);
 }
 
 .log-item.rarity-rare {

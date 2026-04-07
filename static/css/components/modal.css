@@ -47,6 +47,7 @@
 
 /* Rarity colors utility */
 .rarity-common { color: var(--rarity-common); }
+.rarity-uncommon { color: var(--rarity-uncommon); font-weight: bold; }
 .rarity-rare { color: var(--rarity-rare); font-weight: bold; }
 .rarity-epic { color: var(--rarity-epic); font-weight: bold; }
 .rarity-legendary { color: var(--rarity-legendary); font-weight: bold; }

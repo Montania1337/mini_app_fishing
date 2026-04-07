@@ -1,4 +1,5 @@
 # main.py
+import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -10,6 +11,7 @@ app = FastAPI()
 
 
 current_fish = {}
+server_clock_task = None
 
 # Инициализация БД при старте
 try:
@@ -20,6 +22,34 @@ except Exception as e:
     traceback.print_exc()
 
 # Подключаем статику
+async def server_clock_loop():
+    while True:
+        services.refresh_server_runtime_state()
+        await asyncio.sleep(config.SERVER_TIME_UPDATE_INTERVAL_SECONDS)
+
+
+@app.on_event("startup")
+async def startup_server_clock():
+    global server_clock_task
+    services.initialize_server_runtime_state()
+    server_clock_task = asyncio.create_task(server_clock_loop())
+
+
+@app.on_event("shutdown")
+async def shutdown_server_clock():
+    global server_clock_task
+    if server_clock_task is None:
+        return
+
+    server_clock_task.cancel()
+    try:
+        await server_clock_task
+    except asyncio.CancelledError:
+        pass
+    finally:
+        server_clock_task = None
+
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
@@ -37,10 +67,19 @@ async def get_constants():
         "AUCTION_LISTING_DURATION_HOURS": config.AUCTION_LISTING_DURATION_HOURS,
         "AUCTION_LISTING_FEE_PERCENT": config.AUCTION_LISTING_FEE_PERCENT,
         "AUCTION_LISTING_MIN_FEE": config.AUCTION_LISTING_MIN_FEE,
-        "FISHES": config.FISHES,
+        "FISHES": services.get_current_fish_pool(),
+        "FISHES_DAY": config.FISHES_DAY,
+        "FISHES_NIGHT": config.FISHES_NIGHT,
+        "MISC": config.MISC,
         "FISH_PREFIXES": config.FISH_PREFIXES,
         "FISH_SUFFIXES": config.FISH_SUFFIXES,
+        "SERVER_TIME": services.get_server_time_data(),
     }
+
+@app.get("/api/server-time")
+async def get_server_time():
+    return services.get_server_time_data()
+
 
 @app.post("/api/login")
 async def login(payload: dict):
@@ -63,7 +102,8 @@ async def login(payload: dict):
             "rods": rods,
             "active_rod": active_rod,
             "rod_price": config.ROD_PRICE,
-            "inventory_size": config.INVENTORY_SIZE
+            "inventory_size": config.INVENTORY_SIZE,
+            "server_time": services.get_server_time_data(),
         }
     except Exception as e:
         print(f"❌ Ошибка в /api/login: {e}")
@@ -104,6 +144,7 @@ async def fish(payload: dict):
     return {
         "fish_name": fish_data["name"],
         "emoji": fish_data["emoji"],
+        "color": fish_data.get("color", "normal"),
         "rarity": fish_data["rarity"],
         "hp": fish_hp,
         "max_hp": fish_hp,
@@ -111,7 +152,10 @@ async def fish(payload: dict):
         "durability_left": durability_left,
         "is_broken": is_broken,
         "is_crit": fish_data.get("is_crit", False),
-        "auto_catch": fish_data.get("auto_catch", False)
+        "auto_catch": fish_data.get("auto_catch", False),
+        "server_time": fish_data.get("server_time"),
+        "time_of_day": fish_data.get("time_of_day"),
+        "fish_pool_version": fish_data.get("fish_pool_version"),
     }
 
 

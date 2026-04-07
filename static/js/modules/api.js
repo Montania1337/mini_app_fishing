@@ -118,6 +118,24 @@ const API = {
         }
     },
 
+    async getServerTime() {
+        try {
+            const res = await fetch('/api/server-time', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!res.ok) {
+                throw new Error(`Ошибка при загрузке серверного времени: ${res.status}`);
+            }
+
+            return await res.json();
+        } catch (e) {
+            console.error('Ошибка при загрузке серверного времени:', e);
+            throw e;
+        }
+    },
+
     upgradeRod(rodId) {
         return this.request('upgrade-rod', { rod_id: rodId });
     }

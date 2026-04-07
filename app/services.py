@@ -1,9 +1,168 @@
 import random
 import json
 import math
+import threading
+import time
 from copy import deepcopy
-from app.config import ADMIN_ROD, RodKeyWords, FISHES, ROD_PROPERTIES, FISHING_ROD_BASES, FISHING_ROD_BASES_WEIGHTS, ACHIEVEMENT_RULES, ROD_NAMES, FISH_PREFIXES, FISH_SUFFIXES, ACHIEVEMENTS_LIST
+from datetime import datetime, timedelta, time as dt_time
+from app.config import ADMIN_ROD, RodKeyWords, ROD_PROPERTIES, FISHING_ROD_BASES, FISHING_ROD_BASES_WEIGHTS, ACHIEVEMENT_RULES, ROD_NAMES, FISH_PREFIXES, FISH_SUFFIXES, ACHIEVEMENTS_LIST, FISHES_DAY, FISHES_NIGHT, MISC
 from app import database
+from app.fish_naming import format_fish_name
+
+_server_state_lock = threading.Lock()
+_server_state = {
+    "started_at_real_monotonic": None,
+    "start_server_datetime": None,
+    "current_server_datetime": None,
+    "time_of_day": "day",
+    "fish_pool": [*FISHES_DAY, *MISC],
+    "pool_version": 1,
+}
+
+
+def _parse_server_time_start() -> dt_time:
+    raw_value = _get_config().SERVER_TIME_START
+    try:
+        parts = [int(part) for part in raw_value.split(":")]
+        if len(parts) == 2:
+            hour, minute = parts
+            second = 0
+        elif len(parts) == 3:
+            hour, minute, second = parts
+        else:
+            raise ValueError("Invalid time format")
+        return dt_time(hour=hour % 24, minute=minute % 60, second=second % 60)
+    except (TypeError, ValueError):
+        return dt_time(hour=9, minute=0, second=0)
+
+
+def _get_config():
+    from app import config
+    return config
+
+
+def _get_time_of_day(server_datetime: datetime) -> str:
+    config = _get_config()
+    hour = server_datetime.hour
+    day_start = config.SERVER_DAY_START_HOUR
+    night_start = config.SERVER_NIGHT_START_HOUR
+
+    if day_start == night_start:
+        return "day"
+
+    if day_start < night_start:
+        return "day" if day_start <= hour < night_start else "night"
+
+    return "night" if night_start <= hour < day_start else "day"
+
+
+def _build_fish_pool(time_of_day: str) -> list[dict]:
+    base_pool = FISHES_DAY if time_of_day == "day" else FISHES_NIGHT
+    return [*base_pool, *MISC]
+
+
+def initialize_server_runtime_state() -> dict:
+    config = _get_config()
+    start_server_datetime = datetime.combine(datetime.now().date(), _parse_server_time_start())
+    time_of_day = _get_time_of_day(start_server_datetime)
+    fish_pool = _build_fish_pool(time_of_day)
+
+    with _server_state_lock:
+        _server_state["started_at_real_monotonic"] = time.monotonic()
+        _server_state["start_server_datetime"] = start_server_datetime
+        _server_state["current_server_datetime"] = start_server_datetime
+        _server_state["time_of_day"] = time_of_day
+        _server_state["fish_pool"] = fish_pool
+        _server_state["pool_version"] = 1
+
+    print(
+        f"[server-time:init] start={start_server_datetime.strftime('%H:%M:%S')} "
+        f"mode={time_of_day} speed={config.SERVER_TIME_MULTIPLIER}x "
+        f"pool_size={len(fish_pool)}"
+    )
+    return get_server_time_data(refresh=False)
+
+
+def refresh_server_runtime_state() -> dict:
+    config = _get_config()
+
+    with _server_state_lock:
+        if _server_state["started_at_real_monotonic"] is None or _server_state["start_server_datetime"] is None:
+            should_initialize = True
+        else:
+            should_initialize = False
+
+    if should_initialize:
+        return initialize_server_runtime_state()
+
+    with _server_state_lock:
+        elapsed_real_seconds = time.monotonic() - _server_state["started_at_real_monotonic"]
+        current_server_datetime = _server_state["start_server_datetime"] + timedelta(
+            seconds=elapsed_real_seconds * config.SERVER_TIME_MULTIPLIER
+        )
+        new_time_of_day = _get_time_of_day(current_server_datetime)
+        time_of_day_changed = new_time_of_day != _server_state["time_of_day"]
+
+        _server_state["current_server_datetime"] = current_server_datetime
+
+        if time_of_day_changed:
+            _server_state["time_of_day"] = new_time_of_day
+            _server_state["fish_pool"] = _build_fish_pool(new_time_of_day)
+            _server_state["pool_version"] += 1
+            pool_size = len(_server_state["fish_pool"])
+        else:
+            pool_size = len(_server_state["fish_pool"])
+
+        current_snapshot = {
+            "server_datetime": _server_state["current_server_datetime"],
+            "time_of_day": _server_state["time_of_day"],
+            "pool_version": _server_state["pool_version"],
+            "pool_size": pool_size,
+        }
+
+    if time_of_day_changed:
+        print(
+            f"[server-time:switch] time={current_snapshot['server_datetime'].strftime('%H:%M:%S')} "
+            f"mode={current_snapshot['time_of_day']} pool_version={current_snapshot['pool_version']} "
+            f"pool_size={current_snapshot['pool_size']}"
+        )
+
+    return get_server_time_data(refresh=False)
+
+
+def get_current_fish_pool() -> list[dict]:
+    refresh_server_runtime_state()
+    with _server_state_lock:
+        return list(_server_state["fish_pool"])
+
+
+def get_server_time_data(refresh: bool = True) -> dict:
+    if refresh:
+        refresh_server_runtime_state()
+
+    config = _get_config()
+    with _server_state_lock:
+        current_server_datetime = _server_state["current_server_datetime"]
+        time_of_day = _server_state["time_of_day"]
+        pool_size = len(_server_state["fish_pool"])
+        pool_version = _server_state["pool_version"]
+
+    if current_server_datetime is None:
+        current_server_datetime = datetime.combine(datetime.now().date(), _parse_server_time_start())
+        time_of_day = _get_time_of_day(current_server_datetime)
+        pool_size = len(_build_fish_pool(time_of_day))
+        pool_version = 1
+
+    return {
+        "server_time": current_server_datetime.strftime("%H:%M:%S"),
+        "server_timestamp": current_server_datetime.isoformat(),
+        "time_of_day": time_of_day,
+        "multiplier": config.SERVER_TIME_MULTIPLIER,
+        "update_interval_seconds": config.SERVER_TIME_UPDATE_INTERVAL_SECONDS,
+        "pool_size": pool_size,
+        "pool_version": pool_version,
+    }
+
 
 def get_rod_properties(rod: dict) -> dict:
     """Возвращает свойства удочки в виде словаря."""
@@ -15,7 +174,7 @@ def get_rod_properties(rod: dict) -> dict:
     return rod.get('properties', {}) or {}
 
 
-def roll_fish_parts(luck_bonus: float = 0.0):
+def roll_fish_parts(luck_bonus: float = 0.0, fish_pool: list[dict] | None = None):
     """
     выбирает базовую рыбу, префикс и суффикс с учетом лак бонуса
     """
@@ -41,7 +200,8 @@ def roll_fish_parts(luck_bonus: float = 0.0):
             "adjusted_weight": adjusted_weights[selected_index],
         }
 
-    fish_roll = pick_with_luck(FISHES)
+    active_fish_pool = fish_pool or get_current_fish_pool()
+    fish_roll = pick_with_luck(active_fish_pool)
     prefix_roll = pick_with_luck(FISH_PREFIXES)
     suffix_roll = pick_with_luck(FISH_SUFFIXES)
 
@@ -168,6 +328,8 @@ def generate_admin_rod():
 
 def catch_fish_logic(rod: dict):
     properties = get_rod_properties(rod)
+    server_time_data = get_server_time_data()
+    current_fish_pool = get_current_fish_pool()
     
     luck_bonus = 0.0
     reward_mult = 1.0
@@ -187,14 +349,19 @@ def catch_fish_logic(rod: dict):
     
   
 
-    selected_fish, prefix, suffix, roll_debug = roll_fish_parts(luck_bonus)
+    selected_fish, prefix, suffix, roll_debug = roll_fish_parts(luck_bonus, current_fish_pool)
 
-    s_name = f" {suffix['name']}" if suffix['name'] else ""
-    full_name = f"{prefix['name']} {selected_fish['name']}{s_name}".strip()
+    full_name = format_fish_name(
+        selected_fish["name"],
+        prefix.get("name", ""),
+        suffix.get("name", "")
+    )
     
     base_price = selected_fish["base_price"]
     total_mult = reward_mult * prefix["mult"] * suffix["mult"]
-    
+    visual_points = selected_fish.get("visual_points", 0)
+    display_score = total_mult + visual_points
+
 
     final_reward = int(base_price * total_mult)
     is_crit = random.random() < crit_chance
@@ -202,6 +369,10 @@ def catch_fish_logic(rod: dict):
         final_reward = int(final_reward * 2.5)  # Крит наносит 2.5x урона
 
     print(
+        f"[server-time] time={server_time_data['server_time']} "
+        f"mode={server_time_data['time_of_day']} "
+        f"pool_version={server_time_data['pool_version']} "
+        f"pool_size={server_time_data['pool_size']} "
         f"[catch-roll] luck_bonus={luck_bonus} "
         f"fish={roll_debug['fish']['name']}({roll_debug['fish']['rarity']}) "
         f"fish_base_weight={roll_debug['fish']['base_weight']:.3f} "
@@ -214,14 +385,16 @@ def catch_fish_logic(rod: dict):
         f"suffix_adjusted_weight={roll_debug['suffix']['adjusted_weight']:.3f}"
     )
 # Поменять надо на что-то умное
-    if total_mult >= 50:
+    if display_score >= 100:
         display_rarity = "mythic"
-    elif total_mult >= 15:
+    elif display_score >= 50:
         display_rarity = "legendary"
-    elif total_mult >= 5:
+    elif display_score >= 15:
         display_rarity = "epic"
-    elif total_mult >= 2:
+    elif display_score >= 5:
         display_rarity = "rare"
+    elif display_score > 1:
+        display_rarity = "uncommon"
     else:
         display_rarity = "common"
 
@@ -230,7 +403,13 @@ def catch_fish_logic(rod: dict):
     selected_fish["prefix_data"] = prefix
     selected_fish["suffix_data"] = suffix
     selected_fish["display_rarity"] = display_rarity
+    selected_fish["visual_points"] = visual_points
+    selected_fish["display_score"] = display_score
     selected_fish["is_crit"] = is_crit
+    selected_fish["color"] = selected_fish.get("color", "normal")
+    selected_fish["server_time"] = server_time_data["server_time"]
+    selected_fish["time_of_day"] = server_time_data["time_of_day"]
+    selected_fish["fish_pool_version"] = server_time_data["pool_version"]
     
     # Проверяем, будет ли рыба поймана автоматически
     # Если HP рыбы <= среднему урону удочки, рыба ловится без боя

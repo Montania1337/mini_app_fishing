@@ -15,7 +15,12 @@ const CombatManager = {
         const hpFill = document.getElementById('combat-hp-fill');
         const hpText = document.getElementById('combat-hp-text');
 
-        if (fishEmoji) fishEmoji.innerText = fishData.emoji || '🐟';
+        if (fishEmoji) {
+            fishEmoji.innerHTML = UIManager.renderFishEmoji(
+                fishData.emoji || '🐟',
+                fishData.color || 'normal'
+            );
+        }
         if (fishName) fishName.innerText = fishData.fish_name || 'Рыба';
         if (hpFill) hpFill.style.width = '100%';
         if (hpText) hpText.innerText = `${fishData.hp}/${fishData.max_hp}`;
@@ -59,7 +64,7 @@ const CombatManager = {
 
         return `
             <div class="log-content">
-                <div class="log-icon">${fish.emoji}</div>
+                <div class="log-icon">${UIManager.renderFishEmoji(fish.emoji, fish.color)}</div>
 
                 <div class="log-info">
                     <div class="log-title">

@@ -8,6 +8,20 @@ DEFAULT_DATABASE_PATH = ROOT_DIR / '.database' / 'fishing.db'
 DATABASE_FILE_PATH = pathlib.Path(os.getenv('DATABASE_PATH', str(DEFAULT_DATABASE_PATH)))
 DATABASE_DIR = DATABASE_FILE_PATH.parent
 
+
+def _get_env_int(name: str, default: int) -> int:
+    try:
+        return int(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _get_env_float(name: str, default: float) -> float:
+    try:
+        return float(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
 # app/config.py
 # uvicorn main:app  --port 5000
 # Настройки экономики
@@ -16,6 +30,13 @@ AUCTION_LISTING_DURATION_HOURS = 72
 AUCTION_LISTING_FEE_PERCENT = 0.01
 AUCTION_LISTING_MIN_FEE = 1
 INVENTORY_SIZE = 20  # Максимальное количество удочек в инвентаре (3 ряда по 4)
+
+
+SERVER_TIME_START = os.getenv("SERVER_TIME_START", "09:00")
+SERVER_TIME_MULTIPLIER = max(_get_env_float("SERVER_TIME_MULTIPLIER", 60.0), 0.1)
+SERVER_TIME_UPDATE_INTERVAL_SECONDS = max(_get_env_float("SERVER_TIME_UPDATE_INTERVAL_SECONDS", 30.0), 1.0)
+SERVER_DAY_START_HOUR = max(0, min(23, _get_env_int("SERVER_DAY_START_HOUR", 6)))
+SERVER_NIGHT_START_HOUR = max(0, min(23, _get_env_int("SERVER_NIGHT_START_HOUR", 21)))
 
 
 class RodKeyWords(str, Enum):
@@ -221,33 +242,54 @@ FISHING_ROD_BASES_WEIGHTS = [
 ]
 
 # Рыбы
-FISHES = [
-    {"name": "Карась", "emoji": "🐟", "rarity": "common", "base_price": 10, "base_hp": 12, "rarity_weight": 500},
-    {"name": "Креветка", "emoji": "🦐", "rarity": "common", "base_price": 15, "base_hp": 5, "rarity_weight": 200},
-    {"name": "Ботинок", "emoji": "🥾", "rarity": "common", "base_price": 2, "base_hp": 10, "rarity_weight": 80},
-    {"name": "Водоросли", "emoji": "🌿", "rarity": "common", "base_price": 2, "base_hp": 5, "rarity_weight": 5},
-    {"name": "Пластиковый стаканчик", "emoji": "🥤", "rarity": "common", "base_price": 2, "base_hp": 5, "rarity_weight": 5},
+FISHES_DAY = [
+    {"name": "Карась", "emoji": "🐟", "rarity": "common", "color": "normal", "base_price": 10, "base_hp": 12, "visual_points": 0, "rarity_weight": 500},
+    {"name": "Креветка", "emoji": "🦐", "rarity": "common", "color": "normal", "base_price": 15, "base_hp": 5, "visual_points": 0, "rarity_weight": 200},
+    {"name": "Окунь", "emoji": "🐠", "rarity": "uncommon", "color": "normal", "base_price": 15, "base_hp": 20, "visual_points": 5, "rarity_weight": 300},
+    {"name": "Краб", "emoji": "🦀", "rarity": "rare", "color": "normal", "base_price": 35, "base_hp": 20, "visual_points": 10, "rarity_weight": 150},
+    {"name": "Фугу", "emoji": "🐡", "rarity": "rare", "color": "normal", "base_price": 25, "base_hp": 35, "visual_points": 10, "rarity_weight": 80},
+    {"name": "Золотая рыбка", "emoji": "✨", "rarity": "epic", "color": "normal", "base_price": 100, "base_hp": 75, "visual_points": 20, "rarity_weight": 35},
+    {"name": "Акула", "emoji": "🦈", "rarity": "epic", "color": "normal", "base_price": 150, "base_hp": 100, "visual_points": 20, "rarity_weight": 15},
+    {"name": "Кракен", "emoji": "🦑", "rarity": "legendary", "color": "normal", "base_price": 500, "base_hp": 200, "visual_points": 50, "rarity_weight": 3},
+    {"name": "Молюск", "emoji": "🦪", "rarity": "legendary", "color": "normal", "base_price": 150, "base_hp": 5, "visual_points": 50, "rarity_weight": 1},
+]
 
-    {"name": "Окунь", "emoji": "🐠", "rarity": "uncommon", "base_price": 15, "base_hp": 20, "rarity_weight": 300},
-    {"name": "Фотоаппарат", "emoji": "📷", "rarity": "uncommon", "base_price": 30, "base_hp": 5, "rarity_weight": 5},
-
-    {"name": "Краб", "emoji": "🦀", "rarity": "rare", "base_price": 35, "base_hp": 20, "rarity_weight": 150},
-    {"name": "Фугу", "emoji": "🐡", "rarity": "rare", "base_price": 25, "base_hp": 35, "rarity_weight": 80},
-    {"name": "Ключ", "emoji": "🗝️", "rarity": "rare", "base_price": 50, "base_hp": 5, "rarity_weight": 3},
-    {"name": "Лотерейный билет", "emoji": "🎟️", "rarity": "rare", "base_price": 60, "base_hp": 5, "rarity_weight": 2},
-
-    {"name": "Ракушка", "emoji": "🐚", "rarity": "epic", "base_price": 15, "base_hp": 5, "rarity_weight": 150},
-    {"name": "Золотая рыбка", "emoji": "✨", "rarity": "epic", "base_price": 100, "base_hp": 75, "rarity_weight": 35},
-    {"name": "Акула", "emoji": "🦈", "rarity": "epic", "base_price": 150, "base_hp": 100, "rarity_weight": 15},
-    {"name": "Кольцо", "emoji": "💍", "rarity": "epic", "base_price": 180, "base_hp": 5, "rarity_weight": 1},
-
-    {"name": "Кракен", "emoji": "🦑", "rarity": "legendary", "base_price": 500, "base_hp": 200, "rarity_weight": 3},
-    {"name": "Молюск", "emoji": "🦪", "rarity": "legendary", "base_price": 150, "base_hp": 5, "rarity_weight": 1},
+FISHES_NIGHT = [
+    {"name": "Светящийся карась", "emoji": "🐟", "rarity": "common", "color": "night", "base_price": 12, "base_hp": 14, "visual_points": 0, "rarity_weight": 500},
+    {"name": "Ночная креветка", "emoji": "🦐", "rarity": "common", "color": "night", "base_price": 18, "base_hp": 6, "visual_points": 0, "rarity_weight": 200},
+    {"name": "Теневой окунь", "emoji": "🐠", "rarity": "uncommon", "color": "night", "base_price": 20, "base_hp": 24, "visual_points": 5, "rarity_weight": 300},
+    {"name": "Глубинный краб", "emoji": "🦀", "rarity": "rare", "color": "night", "base_price": 40, "base_hp": 25, "visual_points": 10, "rarity_weight": 150},
+    {"name": "Ядовитый фугу", "emoji": "🐡", "rarity": "rare", "color": "night", "base_price": 30, "base_hp": 40, "visual_points": 10, "rarity_weight": 80},
+    {"name": "Призрачная золотая рыбка", "emoji": "✨", "rarity": "epic", "color": "night", "base_price": 130, "base_hp": 85, "visual_points": 20, "rarity_weight": 35},
+    {"name": "Чёрная акула", "emoji": "🦈", "rarity": "epic", "color": "night", "base_price": 180, "base_hp": 120, "visual_points": 20, "rarity_weight": 15},
+    {"name": "Древний кракен", "emoji": "🦑", "rarity": "legendary", "color": "night", "base_price": 600, "base_hp": 250, "visual_points": 50, "rarity_weight": 3},
+    {"name": "Тёмный моллюск", "emoji": "🦪", "rarity": "legendary", "color": "night", "base_price": 200, "base_hp": 10, "visual_points": 50, "rarity_weight": 1},
 ]
 
 
 
-# Модификаторы качества и размера (Префиксы)
+
+MISC = [
+    {"name": "Ботинок", "emoji": "🥾", "rarity": "misc", "base_price": 2, "base_hp": 10, "visual_points": 0, "rarity_weight": 80},
+    {"name": "Водоросли", "emoji": "🌿", "rarity": "misc", "base_price": 2, "base_hp": 5, "visual_points": 0, "rarity_weight": 5},
+    {"name": "Пластиковый стаканчик", "emoji": "🥤", "rarity": "misc", "base_price": 2, "base_hp": 5, "visual_points": 0, "rarity_weight": 5},
+    {"name": "Фотоаппарат", "emoji": "📷", "rarity": "misc", "base_price": 30, "base_hp": 5, "visual_points": 0, "rarity_weight": 5},
+    {"name": "Ключ", "emoji": "🗝️", "rarity": "misc", "base_price": 50, "base_hp": 5, "visual_points": 0, "rarity_weight": 3},
+    {"name": "Лотерейный билет", "emoji": "🎟️", "rarity": "misc", "base_price": 60, "base_hp": 5, "visual_points": 0, "rarity_weight": 2},
+    {"name": "Ракушка", "emoji": "🐚", "rarity": "misc", "base_price": 15, "base_hp": 5, "visual_points": 0, "rarity_weight": 150},
+    {"name": "Кольцо", "emoji": "💍", "rarity": "misc", "base_price": 180, "base_hp": 5, "visual_points": 0, "rarity_weight": 1},
+]
+
+
+FISH_POOLS = {
+    "day": FISHES_DAY,
+    "night": FISHES_NIGHT,
+    "misc": MISC,
+}
+
+# старая хуйня
+FISHES = [*FISHES_DAY, *MISC]
+
 FISH_PREFIXES = [
     # Мелкие 
     {"name": "Крошечная", "mult": 0.4, "hp_mult": 0.3, "rarity_weight": 100},

@@ -17,17 +17,30 @@ const GameState = {
     isLoading: false,
     balance: 0,
     activeRod: null,
-    rods: []
+    rods: [],
+    serverClock: {
+        tickerId: null,
+        syncId: null,
+        baseTimestampMs: null,
+        syncedAtMs: null,
+        multiplier: 60,
+        timeOfDay: 'day',
+        updateIntervalMs: 5000
+    }
 };
 
 const APP_META = {
-    version: 'v0.1.1 b'
+    version: 'v0.1.2 FARGUS EDITION'
 };
 
 // DOM элементы
 const UI_ELEMENTS = {
     balance: document.getElementById('balance'),
     name: document.getElementById('username'),
+    serverTimeWidget: document.getElementById('server-time-widget'),
+    serverTimeIcon: document.getElementById('server-time-icon'),
+    serverTimeLabel: document.getElementById('server-time-label'),
+    serverTimeValue: document.getElementById('server-time-value'),
     rodInfo: document.getElementById('rod-info'),
     log: document.getElementById('log'),
     fishBtn: document.getElementById('fish-btn'),
@@ -83,6 +96,105 @@ const UI_ELEMENTS = {
     rodPanel: document.querySelector('.rod-panel')
 };
 
+const SERVER_TIME_META = {
+    day: { icon: '☀️', label: 'День' },
+    night: { icon: '🌙', label: 'Ночь' }
+};
+
+function parseServerTimestamp(serverTimeData = {}) {
+    if (serverTimeData.server_timestamp) {
+        const parsedTimestamp = Date.parse(serverTimeData.server_timestamp);
+        if (!Number.isNaN(parsedTimestamp)) {
+            return parsedTimestamp;
+        }
+    }
+
+    if (serverTimeData.server_time) {
+        const match = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(serverTimeData.server_time);
+        if (match) {
+            const now = new Date();
+            now.setHours(Number(match[1]), Number(match[2]), Number(match[3] || 0), 0);
+            return now.getTime();
+        }
+    }
+
+    return Date.now();
+}
+
+function formatServerTimeValue(date) {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+}
+
+function renderServerTime() {
+    if (!UI_ELEMENTS.serverTimeValue || !UI_ELEMENTS.serverTimeIcon || !UI_ELEMENTS.serverTimeLabel) {
+        return;
+    }
+
+    const clockState = GameState.serverClock;
+    const meta = SERVER_TIME_META[clockState.timeOfDay] || SERVER_TIME_META.day;
+
+    UI_ELEMENTS.serverTimeWidget?.setAttribute('data-mode', clockState.timeOfDay || 'day');
+    UI_ELEMENTS.serverTimeIcon.textContent = meta.icon;
+    UI_ELEMENTS.serverTimeLabel.textContent = meta.label;
+
+    if (!clockState.baseTimestampMs || !clockState.syncedAtMs) {
+        UI_ELEMENTS.serverTimeValue.textContent = '--:--';
+        return;
+    }
+
+    const elapsedRealMs = Date.now() - clockState.syncedAtMs;
+    const elapsedServerMs = elapsedRealMs * (clockState.multiplier || 1);
+    const displayDate = new Date(clockState.baseTimestampMs + elapsedServerMs);
+    UI_ELEMENTS.serverTimeValue.textContent = formatServerTimeValue(displayDate);
+}
+
+function startServerTimeTicker() {
+    if (GameState.serverClock.tickerId) {
+        clearInterval(GameState.serverClock.tickerId);
+    }
+
+    renderServerTime();
+    GameState.serverClock.tickerId = setInterval(renderServerTime, 1000);
+}
+
+async function syncServerTimeFromApi() {
+    try {
+        const serverTimeData = await API.getServerTime();
+        syncServerTime(serverTimeData);
+    } catch (e) {
+        console.warn('Не удалось обновить серверное время:', e);
+    }
+}
+
+function scheduleServerTimeSync() {
+    if (GameState.serverClock.syncId) {
+        clearInterval(GameState.serverClock.syncId);
+    }
+
+    GameState.serverClock.syncId = setInterval(() => {
+        syncServerTimeFromApi();
+    }, GameState.serverClock.updateIntervalMs);
+}
+
+function syncServerTime(serverTimeData) {
+    if (!serverTimeData) return;
+
+    GameState.serverClock.baseTimestampMs = parseServerTimestamp(serverTimeData);
+    GameState.serverClock.syncedAtMs = Date.now();
+    GameState.serverClock.multiplier = Number(serverTimeData.multiplier) || GameState.serverClock.multiplier || 60;
+    GameState.serverClock.timeOfDay = serverTimeData.time_of_day || GameState.serverClock.timeOfDay || 'day';
+    GameState.serverClock.updateIntervalMs = Math.max(
+        1000,
+        Number(serverTimeData.update_interval_seconds || 5) * 1000
+    );
+
+    renderServerTime();
+    startServerTimeTicker();
+    scheduleServerTimeSync();
+}
+
 // ============================================================
 // ИНИЦИАЛИЗАЦИЯ КОНСТАНТ ИЗ СЕРВЕРА
 // ============================================================
@@ -100,11 +212,13 @@ async function initializeGame() {
         window.AUCTION_LISTING_DURATION_HOURS = constants.AUCTION_LISTING_DURATION_HOURS ?? 72;
         window.AUCTION_LISTING_FEE_PERCENT = constants.AUCTION_LISTING_FEE_PERCENT ?? 0.01;
         window.AUCTION_LISTING_MIN_FEE = constants.AUCTION_LISTING_MIN_FEE ?? 1;
+        syncServerTime(constants.SERVER_TIME);
         
         console.log('window.ROD_UPGRADE_SYSTEM установлена:', window.ROD_UPGRADE_SYSTEM);
         
         // Загружаем игроков
         const data = await API.login();
+        syncServerTime(data.server_time);
         GameState.balance = data.balance;
         GameState.rods = data.rods || [];
         GameState.activeRod = RodManager.resolveActiveRod(GameState.rods, data.active_rod || null);
@@ -179,6 +293,10 @@ async function onFish() {
 
     try {
         const fishData = await API.fish();
+        syncServerTime({
+            server_time: fishData.server_time,
+            time_of_day: fishData.time_of_day
+        });
         syncActiveRodState(fishData);
         
         // Проверяем, ловится ли рыба автоматически
@@ -289,6 +407,7 @@ function setupStrikeListener(fishData) {
 async function refreshInventory() {
     try {
         const data = await API.login();
+        syncServerTime(data.server_time);
         GameState.rods = data.rods || [];
         GameState.activeRod = RodManager.resolveActiveRod(GameState.rods, data.active_rod || GameState.activeRod);
         RodManager.currentRods = GameState.rods;

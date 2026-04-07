@@ -69,5 +69,22 @@ const UIManager = {
         if (element) {
             element.innerText = text;
         }
+    },
+
+    escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
+    renderFishEmoji(emoji, color = 'normal') {
+        const safeEmoji = this.escapeHtml(emoji || '🐟');
+        if (color === 'night') {
+            return `<span style="display: inline-block; filter: sepia(1) saturate(50) hue-rotate(241deg);">${safeEmoji}</span>`;
+        }
+        return safeEmoji;
     }
 };

@@ -33,6 +33,34 @@
 
 /* Большие телефоны (480px - 768px) */
 @media (max-width: 768px) {
+    header {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    #username {
+        font-size: 1rem;
+        margin-left: 8px;
+    }
+
+    .server-time-widget {
+        min-width: 104px;
+        padding: 7px 10px 8px;
+    }
+
+    .server-time-value {
+        font-size: 1rem;
+    }
+
+    .server-time-meta {
+        font-size: 0.64rem;
+    }
+
+    .balance-container {
+        margin-right: 8px;
+        padding: 8px 12px;
+    }
+
     .inventory-grid,
     .auction-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -71,6 +99,35 @@
 
 /* Средние телефоны (414px - 480px) */
 @media (max-width: 480px) {
+    header {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .server-time-widget {
+        min-width: 94px;
+        padding: 6px 8px 7px;
+        border-radius: 16px;
+    }
+
+    .server-time-value {
+        font-size: 0.92rem;
+        letter-spacing: 0.06em;
+    }
+
+    .server-time-meta {
+        gap: 4px;
+        font-size: 0.58rem;
+    }
+
+    .server-time-icon {
+        font-size: 0.82rem;
+    }
+
+    .balance-container {
+        padding: 7px 10px;
+        gap: 6px;
+    }
 
     .inventory-grid,
     .auction-grid {
@@ -102,6 +159,32 @@
 
 /* Маленькие телефоны (360px - 414px) */
 @media (max-width: 360px) {
+    header {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    }
+
+    #username {
+        font-size: 0.92rem;
+        margin-left: 4px;
+    }
+
+    .server-time-widget {
+        min-width: 86px;
+        padding: 6px 7px;
+    }
+
+    .server-time-value {
+        font-size: 0.84rem;
+    }
+
+    .server-time-meta {
+        font-size: 0.52rem;
+    }
+
+    .balance-container {
+        margin-right: 4px;
+        padding: 6px 8px;
+    }
 
     
     .inventory-grid,
