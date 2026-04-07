@@ -48,6 +48,7 @@ class RodKeyWords(str, Enum):
     ROD_DURABILITY_INCREASE = "rod_durability_increase"
     ROD_PIERCING_INCREASE = "rod_piercing_increase"
 
+
 # Пресет для тестов афиксов
 ADMIN_ROD = None
 #{
@@ -241,11 +242,37 @@ FISHING_ROD_BASES_WEIGHTS = [
     rod_base["rarity_weight"] for rod_base in FISHING_ROD_BASES
 ]
 
+class Colors(str, Enum):
+    Default = ""
+    RED = "360"
+    GREEN = "60"
+    BLUE = "180"
+    CIAN = "150"
+    PURPLE = "240"
+    PINK = "330"
+
+FISHES_RARITIES = {
+    "mythic": 2000,
+    "legendary" : 800,
+    "epic" : 100,
+    "rare" : 20,
+    "uncommon" : 5,
+    "common" : 1,
+}
+
+# class FISHES_RARITIES(int, Enum):
+#     common = 0
+#     uncommon = 5
+#     rare = 10
+#     epic = 20
+#     legendary = 50
+
+
 # Рыбы
 FISHES_DAY = [
-    {"name": "Карась", "emoji": "🐟", "rarity": "common", "color": "normal", "base_price": 10, "base_hp": 12, "visual_points": 0, "rarity_weight": 500},
-    {"name": "Креветка", "emoji": "🦐", "rarity": "common", "color": "normal", "base_price": 15, "base_hp": 5, "visual_points": 0, "rarity_weight": 200},
-    {"name": "Окунь", "emoji": "🐠", "rarity": "uncommon", "color": "normal", "base_price": 15, "base_hp": 20, "visual_points": 5, "rarity_weight": 300},
+    {"name": "Карась", "emoji": "🐟", "rarity": "common", "color": Colors.Default, "base_price": 10, "base_hp": 12, "visual_points": 0, "rarity_weight": 500},
+    {"name": "Креветка", "emoji": "🦐", "rarity": "uncommon", "color": Colors.PURPLE, "base_price": 15, "base_hp": 5, "visual_points": 0, "rarity_weight": 200},
+    {"name": "Окунь", "emoji": "🐠", "rarity": "uncommon", "color": Colors.PINK, "base_price": 15, "base_hp": 20, "visual_points": 5, "rarity_weight": 300},
     {"name": "Краб", "emoji": "🦀", "rarity": "rare", "color": "normal", "base_price": 35, "base_hp": 20, "visual_points": 10, "rarity_weight": 150},
     {"name": "Фугу", "emoji": "🐡", "rarity": "rare", "color": "normal", "base_price": 25, "base_hp": 35, "visual_points": 10, "rarity_weight": 80},
     {"name": "Золотая рыбка", "emoji": "✨", "rarity": "epic", "color": "normal", "base_price": 100, "base_hp": 75, "visual_points": 20, "rarity_weight": 35},

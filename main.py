@@ -121,11 +121,12 @@ async def fish(payload: dict):
     if not active_rod:
         raise HTTPException(status_code=400, detail="Нет активной удочки")
     
-    # 1. Логика улова (генерируем рыбу)
+    # 1. Логика улова (генерируем рыбу) /// Здесь уже генерируется хп рыбы
     fish_data, reward = services.catch_fish_logic(active_rod)
     
-    # 2. Рассчитываем HP рыбы
-    fish_hp = services.calculate_fish_hp(fish_data, active_rod)
+    # 2. Рассчитываем HP рыбы /// зачем оно здесь ещё раз генерируется?
+    # fish_hp = services.calculate_fish_hp(fish_data, active_rod)
+    fish_hp = fish_data.get("hp", 10)
     
     # 3. Сохраняем текущую рыбу в памяти
     current_fish[user_id] = {
@@ -148,7 +149,7 @@ async def fish(payload: dict):
         "rarity": fish_data["rarity"],
         "hp": fish_hp,
         "max_hp": fish_hp,
-        "display_rarity": fish_data["display_rarity"],
+        "display_rarity": fish_data.get("display_rarity", "normal"),
         "durability_left": durability_left,
         "is_broken": is_broken,
         "is_crit": fish_data.get("is_crit", False),
