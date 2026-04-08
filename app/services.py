@@ -5,7 +5,7 @@ import threading
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta, time as dt_time
-from app.config import ADMIN_ROD, RodKeyWords, ROD_PROPERTIES, FISHING_ROD_BASES, FISHING_ROD_BASES_WEIGHTS, ACHIEVEMENT_RULES, ROD_NAMES, FISH_PREFIXES, FISH_SUFFIXES, ACHIEVEMENTS_LIST, FISHES_DAY, FISHES_NIGHT, MISC
+from app.config import ADMIN_ROD, RodKeyWords, ROD_PROPERTIES, FISHING_ROD_BASES, FISHING_ROD_BASES_WEIGHTS, ACHIEVEMENT_RULES, ROD_NAMES, FISH_PREFIXES, FISHES_RARITIES, FISH_SUFFIXES, ACHIEVEMENTS_LIST, FISHES_DAY, FISHES_NIGHT, MISC
 from app import database
 from app.fish_naming import format_fish_name
 
@@ -359,8 +359,9 @@ def catch_fish_logic(rod: dict):
     
     base_price = selected_fish["base_price"]
     total_mult = reward_mult * prefix["mult"] * suffix["mult"]
-    visual_points = selected_fish.get("visual_points", 0)
-    display_score = total_mult + visual_points
+    # visual_points = selected_fish.get("visual_points", 0)
+    visual_points = FISHES_RARITIES.get(selected_fish["rarity"], 0)
+    display_score = total_mult * visual_points
 
 
     final_reward = int(base_price * total_mult)
@@ -385,18 +386,20 @@ def catch_fish_logic(rod: dict):
         f"suffix_adjusted_weight={roll_debug['suffix']['adjusted_weight']:.3f}"
     )
 # Поменять надо на что-то умное
-    if display_score >= 100:
-        display_rarity = "mythic"
-    elif display_score >= 50:
-        display_rarity = "legendary"
-    elif display_score >= 15:
-        display_rarity = "epic"
-    elif display_score >= 5:
-        display_rarity = "rare"
-    elif display_score > 1:
-        display_rarity = "uncommon"
-    else:
-        display_rarity = "common"
+    # if display_score >= 100:
+    #     display_rarity = "mythic"
+    # elif display_score >= 50:
+    #     display_rarity = "legendary"
+    # elif display_score >= 15:
+    #     display_rarity = "epic"
+    # elif display_score >= 5:
+    #     display_rarity = "rare"
+    # elif display_score > 1:
+    #     display_rarity = "uncommon"
+    # else:
+    #     display_rarity = "common"
+
+    display_rarity = next((name for name, score in FISHES_RARITIES.items() if display_score >= score), "common")
 
     # Передаем данные
     selected_fish["name"] = full_name
@@ -584,17 +587,15 @@ def calculate_strike_damage(rod: dict):
         
         base_damage = random.choices(list(damage_range), weights=weights)[0]
 
-        # MARK: КАКОВА ХУЙЯ Множитель награды влияет на урон
-        reward_mult = 1.0
-        if 'reward' in properties:
-            try:
-                tier = int(properties['reward'])
-                tier_data = ROD_PROPERTIES['reward']['tiers'].get(tier, {})
-                reward_mult = tier_data.get('value', 1.0) / 2.0 
-            except (ValueError, KeyError, TypeError) as e:
-                print(f"Ошибка при обработке reward в damage: {e}")
+        # reward_mult = 1.0
+        # if 'reward' in properties:
+        #     try:
+        #         tier = int(properties['reward'])
+        #         tier_data = ROD_PROPERTIES['reward']['tiers'].get(tier, {})
+        #         reward_mult = tier_data.get('value', 1.0) / 2.0 
+        #     except (ValueError, KeyError, TypeError) as e:
+        #         print(f"Ошибка при обработке reward в damage: {e}")
         
-        # MARK: КАКОВА ХУЙЯ крит вообще так нахуй работает что это блять
         crit_bonus = 1
         if RodKeyWords.ROD_CRIT_CHANCE_INCREASE in properties:
             try:

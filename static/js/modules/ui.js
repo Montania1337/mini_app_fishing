@@ -80,11 +80,16 @@ const UIManager = {
             .replace(/'/g, '&#39;');
     },
 
-    renderFishEmoji(emoji, color = 'normal') {
+    // renderFishEmoji(emoji, color = 'normal') {
+    //     const safeEmoji = this.escapeHtml(emoji || '🐟');
+    //     if (color === 'night') {
+    //         return `<span style="display: inline-block; filter: sepia(1) saturate(50) hue-rotate(241deg);">${safeEmoji}</span>`;
+    //     }
+    //     return safeEmoji;
+    // }
+
+    renderFishEmoji(emoji, color = '') {
         const safeEmoji = this.escapeHtml(emoji || '🐟');
-        if (color === 'night') {
-            return `<span style="display: inline-block; filter: sepia(1) saturate(50) hue-rotate(241deg);">${safeEmoji}</span>`;
-        }
-        return safeEmoji;
+            return `<span style="display: inline-block; filter: sepia(1) saturate(50) hue-rotate(${color}deg);">${safeEmoji}</span>`;
     }
 };
