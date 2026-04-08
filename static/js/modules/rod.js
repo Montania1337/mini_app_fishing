@@ -69,12 +69,6 @@ const RodManager = {
         return rod.properties || {};
     },
 
-    getTierDescription(tier) {
-        if (tier <= 3) return 'низкий';
-        if (tier <= 6) return 'средний';
-        return 'высокий';
-    },
-
     getDamageLabel(rod) {
         const damage = this.calculateEffectiveDamage(rod);
         return `${damage.effective.min}-${damage.effective.max}`;
@@ -183,30 +177,52 @@ const RodManager = {
 
         const properties = this.parseProperties(rod);
         const blocks = [];
-        const itemClass = variant === 'tooltip' ? 'tooltip-stat-item' : 'bottom-sheet-stat-item';
-        const titleClass = variant === 'tooltip' ? 'tooltip-stat-title' : 'bottom-sheet-stat-title';
-        const valueClass = variant === 'tooltip' ? 'tooltip-stat-value' : 'bottom-sheet-stat-value';
-        const tierClass = variant === 'tooltip' ? 'tooltip-stat-tier' : 'bottom-sheet-stat-tier';
-        const descClass = variant === 'tooltip' ? 'tooltip-stat-desc' : 'bottom-sheet-stat-desc';
+        const isTooltip = variant === 'tooltip';
+        const itemClass = isTooltip ? 'tooltip-stat-item' : 'bottom-sheet-stat-item';
+        const titleClass = isTooltip ? 'tooltip-stat-title' : 'bottom-sheet-stat-title';
+        const valueClass = isTooltip ? 'tooltip-stat-value' : 'bottom-sheet-stat-value';
+        const tierClass = isTooltip ? 'tooltip-stat-tier' : 'bottom-sheet-stat-tier';
+        const descClass = isTooltip ? 'tooltip-stat-desc' : 'bottom-sheet-stat-desc';
 
         for (const propName of propOrder) {
             if (!(propName in properties)) continue;
 
             const tier = Number(properties[propName]);
-            const tierDesc = this.getTierDescription(tier);
             const value = this.formatPropertyValue(propName, tier) || tier;
             const name = window.ROD_PROPERTY_NAMES?.[propName] || propName;
             const desc = window.ROD_PROPERTY_DESCRIPTIONS?.[propName] || '';
+            const safeName = this.escapeHtml(name);
+            const safeValue = this.escapeHtml(String(value));
+            const safeDesc = this.escapeHtml(desc);
+
+            if (isTooltip) {
+                blocks.push(`
+                    <div class="${itemClass}" data-tier="${tier}">
+                        <div class="${titleClass}">
+                            <span>${safeName}</span>
+                            <span class="${valueClass}">${safeValue}</span>
+                        </div>
+                        <div class="${tierClass}">Уровень ${tier}/10</div>
+                        <div class="${descClass}">${safeDesc}</div>
+                    </div>
+                `);
+                continue;
+            }
 
             blocks.push(`
-                <div class="${itemClass}" data-tier="${tier}">
+                <button
+                    type="button"
+                    class="${itemClass} bottom-sheet-affix"
+                    data-tier="${tier}"
+                    data-affix-name="${this.escapeAttribute(name)}"
+                    data-affix-desc="${this.escapeAttribute(desc)}"
+                >
                     <div class="${titleClass}">
-                        <span>${name}</span>
-                        <span class="${valueClass}">${value}</span>
+                        <span>${safeName}</span>
+                        <span class="${valueClass}">${safeValue}</span>
                     </div>
-                    <div class="${tierClass}">Уровень ${tier}/10 (${tierDesc})</div>
-                    <div class="${descClass}">${desc}</div>
-                </div>
+                    <div class="${tierClass}">Уровень ${tier}/10</div>
+                </button>
             `);
         }
 
@@ -233,12 +249,12 @@ const RodManager = {
 
         const items = [
             `
-                <div class="bottom-sheet-stat-item">
+                <div class="bottom-sheet-stat-item bottom-sheet-stat-item-primary">
                     <div class="bottom-sheet-stat-title">
                         <span>Урон</span>
-                        <span class="bottom-sheet-stat-value">${damageLabel}</span>
+                        <span class="bottom-sheet-stat-value">${this.escapeHtml(damageLabel)}</span>
                     </div>
-                    <div class="bottom-sheet-stat-tier">${metaText}</div>
+                    <div class="bottom-sheet-stat-tier">${this.escapeHtml(metaText)}</div>
                 </div>
             `
         ];
