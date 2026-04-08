@@ -8,9 +8,9 @@ WORKDIR /opt/fishingapp
 COPY requirements.txt .
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get upgrade && \
-    rm -rf /var/lib/apt/lists/* && \
-    python3 -m pip --no-cache-dir install -r requirements.txt
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y && \
+    python3 -m pip --no-cache-dir install -r requirements.txt && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY . .
 
